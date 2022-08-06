@@ -1,0 +1,512 @@
+********************************************************************************
+* DUPLICATOR-LITE: Install-Log
+* STEP-1 START @ 02:22:34
+* VERSION: 1.4.6
+* NOTICE: Do NOT post to public sites or forums!!
+********************************************************************************
+PACKAGE INFO________ CURRENT SERVER                         |ORIGINAL SERVER
+PHP VERSION_________: 7.4.30                                |7.4.9
+OS__________________: Linux                                 |Darwin
+CREATED_____________: 2022-08-06 13:51:07
+WP VERSION__________: 6.0.1
+DUP VERSION_________: 1.4.6
+DB__________________: 5.7.38
+DB TABLES___________: 28
+DB ROWS_____________: 5,688
+DB FILE SIZE________: 29.02MB
+********************************************************************************
+SERVER INFO
+PHP_________________: 7.4.9 | SAPI: apache2handler
+PHP MEMORY__________: 4294967296 | SUHOSIN: disabled
+SERVER______________: Apache/2.4.46 (Unix) OpenSSL/1.0.2u PHP/7.4.9 mod_wsgi/3.5 Python/2.7.13 mod_fastcgi/mod_fastcgi-SNAP-0910052141 mod_perl/2.0.11 Perl/v5.30.1
+DOC ROOT____________: "/Applications/MAMP/htdocs/future-yoga"
+DOC ROOT 755________: true
+LOG FILE 644________: true
+REQUEST URL_________: "http://localhost/future-yoga/dup-installer/main.installer.php"
+********************************************************************************
+USER INPUTS
+ARCHIVE ACTION______: "donothing"
+ARCHIVE ENGINE______: "shellexec_unzip"
+SET DIR PERMS_______: 1
+DIR PERMS VALUE_____: 1363
+SET FILE PERMS______: 1
+FILE PERMS VALUE____: 1204
+SAFE MODE___________: "0"
+LOGGING_____________: "1"
+CONFIG MODE_________: "NEW"
+FILE TIME___________: "current"
+********************************************************************************
+
+
+--------------------------------------
+ARCHIVE SETUP
+--------------------------------------
+NAME________________: "/Applications/MAMP/htdocs/future-yoga/20220620_futureyoga_[HASH]_20220806135107_archive.zip"
+SIZE________________: 195.38MB
+
+PRE-EXTRACT-CHECKS
+- PASS: Apache '.htaccess' not found - no backup needed.
+- PASS: Microsoft IIS 'web.config' not found - no backup needed.
+- PASS: WordFence '.user.ini' not found - no backup needed.
+BEFORE EXTRACION ACTIONS
+MAINTENANCE MODE ENABLE
+
+
+START ZIP FILE EXTRACTION SHELLEXEC >>> 
+<<< Shell-Exec Unzip Complete.
+--------------------------------------
+POST-EXTRACT-CHECKS
+--------------------------------------
+PERMISSION UPDATES:
+    -DIRS:  '755'
+    -FILES: '644'
+
+STEP-1 COMPLETE @ 02:22:49 - RUNTIME: 14.2654 sec.
+
+
+
+********************************************************************************
+* DUPLICATOR-LITE INSTALL-LOG
+* STEP-2 START @ 02:23:12
+* NOTICE: Do NOT post to public sites or forums!!
+********************************************************************************
+USER INPUTS
+VIEW MODE___________: "basic"
+DB ACTION___________: "empty"
+DB HOST_____________: "**OBSCURED**"
+DB NAME_____________: "**OBSCURED**"
+DB PASS_____________: "**OBSCURED**"
+DB PORT_____________: "**OBSCURED**"
+NON-BREAKING SPACES_: false
+MYSQL MODE__________: "DEFAULT"
+MYSQL MODE OPTS_____: ""
+CHARSET_____________: "utf8"
+COLLATE_____________: "utf8_general_ci"
+COLLATE FB__________: false
+VIEW CREATION_______: true
+STORED PROCEDURE____: true
+FUNCTION CREATION___: true
+********************************************************************************
+
+--------------------------------------
+DATABASE-ENVIRONMENT
+--------------------------------------
+MYSQL VERSION:	This Server: 5.7.30 -- Build Server: 5.7.38
+FILE SIZE:	dup-database__[HASH].sql (35.65MB)
+TIMEOUT:	5000
+MAXPACK:	4194304
+SQLMODE:	ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION
+NEW SQL FILE:	[/Applications/MAMP/htdocs/future-yoga/dup-installer/dup-installer-data__[HASH].sql]
+COLLATE FB:	Off
+
+NOTICE: This servers version [5.7.30] is less than the build version [5.7.38].  
+If you find issues after testing your site please referr to this FAQ item.
+https://snapcreek.com/duplicator/docs/faqs-tech/#faq-installer-260-q
+--------------------------------------
+DATABASE RESULTS
+--------------------------------------
+DB VIEWS:	enabled
+DB PROCEDURES:	enabled
+DB FUNCTIONS:	enabled
+ERRORS FOUND:	0
+DROPPED TABLES:	19
+RENAMED TABLES:	0
+QUERIES RAN:	286
+
+wp_actionscheduler_actions: (48)
+wp_actionscheduler_claims: (0)
+wp_actionscheduler_groups: (2)
+wp_actionscheduler_logs: (136)
+wp_commentmeta: (0)
+wp_comments: (4)
+wp_duplicator_packages: (0)
+wp_e_events: (0)
+wp_e_notes: (0)
+wp_e_notes_users_relations: (0)
+wp_e_submissions: (0)
+wp_e_submissions_actions_log: (0)
+wp_e_submissions_values: (0)
+wp_links: (0)
+wp_options: (378)
+wp_postmeta: (5868)
+wp_posts: (818)
+wp_shortpixel_folders: (0)
+wp_shortpixel_meta: (0)
+wp_shortpixel_postmeta: (128)
+wp_shortpixel_queue: (107)
+wp_term_relationships: (93)
+wp_term_taxonomy: (24)
+wp_termmeta: (0)
+wp_terms: (24)
+wp_usermeta: (52)
+wp_users: (2)
+wp_wpforms_tasks_meta: (18)
+Removed '74' cache/transient rows
+
+INSERT DATA RUNTIME: 2.5415 sec.
+STEP-2 COMPLETE @ 02:23:15 - RUNTIME: 2.5545 sec.
+[PHP ERR][ISSUE] MSG:PHP Startup: Unable to load dynamic library 'pdo_pgsql.so' (tried: /Applications/MAMP/bin/php/php7.4.9/lib/php/extensions/no-debug-non-zts-20190902/pdo_pgsql.so (dlopen(/Applications/MAMP/bin/php/php7.4.9/lib/php/extensions/no-debug-non-zts-20190902/pdo_pgsql.so, 0x0009): Library not loaded: /Applications/MAMP/Library/pg/lib/libpq.5.dylib
+  Referenced from: /Applications/MAMP/bin/php/php7.4.9/lib/php/extensions/no-debug-non-zts-20190902/pdo_pgsql.so
+  Reason: tried: '/Applications/MAMP/Library/pg/lib/libpq.5.dylib' (no such file), '/usr/lib/libpq.5.dylib' (no such file)), /Applications/MAMP/bin/php/php7.4.9/lib/php/extensions/no-debug-non-zts-20190902/pdo_pgsql.so.so (dlopen(/Applications/MAMP/bin/php/php7.4.9/lib/php/extensions/no-debug-non-zts-20190902/pdo_pgsql.so.so, 0x0009): tried: '/Applications/MAMP/bin/php/php7.4.9/lib/php/extensions/no-debug-non-zts-20190902/pdo_pgsql.so.so' (no such file), '/usr/lib/pdo_pgsql.so.so' (no such file))) [CODE:32|FILE:Unknown|LINE:0]
+
+====================================
+SET SEARCH AND REPLACE LIST
+====================================
+
+
+********************************************************************************
+DUPLICATOR PRO INSTALL-LOG
+STEP-3 START @ 02:23:20
+NOTICE: Do NOT post to public sites or forums
+********************************************************************************
+CHARSET SERVER:	"utf8"
+CHARSET CLIENT:	"utf8"
+********************************************************************************
+OPTIONS:
+blogname______________: "Future Yoga"
+postguid______________: false
+fullsearch____________: false
+path_old______________: "/home/customer/www/manuelp72.sg-host.com/public_html"
+path_new______________: "/Applications/MAMP/htdocs/future-yoga"
+siteurl_______________: "http://localhost/future-yoga"
+url_old_______________: "http://manuelp72.sg-host.com"
+url_new_______________: "http://localhost/future-yoga"
+maxSerializeStrlen____: 4000000
+replaceMail___________: false
+dbcharset_____________: "utf8"
+dbcollate_____________: "utf8_general_ci"
+wp_mail_______________: ""
+wp_nickname___________: ""
+wp_first_name_________: ""
+wp_last_name__________: ""
+ssl_admin_____________: false
+cache_wp______________: false
+cache_path____________: false
+exe_safe_mode_________: false
+config_mode___________: "NEW"
+********************************************************************************
+
+
+====================================
+RUN SEARCH AND REPLACE
+====================================
+
+EVALUATE TABLE: "wp_actionscheduler_actions"______________________[ROWS:    48][PG:   1][SCAN:text columns]
+	SEARCH  1:"/home/customer/www/manuelp72.sg-host.com/public_html" => "/Applications/MAMP/htdocs/future-yoga"
+	SEARCH  2:"\/home\/customer\/www\/manuelp72.sg-host.com\/public_html" => "\/Applications\/MAMP\/htdocs\/future-yoga"
+	SEARCH  3:"%2Fhome%2Fcustomer%2Fwww%2Fmanuelp72.sg-host.com%2Fpublic_html" => "%2FApplications%2FMAMP%2Fhtdocs%2Ffuture-yoga"
+	SEARCH  4:"\home\customer\www\manuelp72.sg-host.com\public_html" => "/Applications/MAMP/htdocs/future-yoga"
+	SEARCH  5:"\\home\\customer\\www\\manuelp72.sg-host.com\\public_html" => "\/Applications\/MAMP\/htdocs\/future-yoga"
+	SEARCH  6:"%5Chome%5Ccustomer%5Cwww%5Cmanuelp72.sg-host.com%5Cpublic_html" => "%2FApplications%2FMAMP%2Fhtdocs%2Ffuture-yoga"
+	SEARCH  7:"//manuelp72.sg-host.com" =========================> "//localhost/future-yoga"
+	SEARCH  8:"\/\/manuelp72.sg-host.com" =======================> "\/\/localhost\/future-yoga"
+	SEARCH  9:"%2F%2Fmanuelp72.sg-host.com" =====================> "%2F%2Flocalhost%2Ffuture-yoga"
+	SEARCH 10:"https://localhost/future-yoga" ===================> "http://localhost/future-yoga"
+	SEARCH 11:"https:\/\/localhost\/future-yoga" ================> "http:\/\/localhost\/future-yoga"
+	SEARCH 12:"https%3A%2F%2Flocalhost%2Ffuture-yoga" ===========> "http%3A%2F%2Flocalhost%2Ffuture-yoga"
+
+EVALUATE TABLE: "wp_actionscheduler_claims"_______________________[ROWS:     0][PG:   0][SCAN:no columns  ]
+
+EVALUATE TABLE: "wp_actionscheduler_groups"_______________________[ROWS:     2][PG:   1][SCAN:text columns]
+	SEARCH  1:"/home/customer/www/manuelp72.sg-host.com/public_html" => "/Applications/MAMP/htdocs/future-yoga"
+	SEARCH  2:"\/home\/customer\/www\/manuelp72.sg-host.com\/public_html" => "\/Applications\/MAMP\/htdocs\/future-yoga"
+	SEARCH  3:"%2Fhome%2Fcustomer%2Fwww%2Fmanuelp72.sg-host.com%2Fpublic_html" => "%2FApplications%2FMAMP%2Fhtdocs%2Ffuture-yoga"
+	SEARCH  4:"\home\customer\www\manuelp72.sg-host.com\public_html" => "/Applications/MAMP/htdocs/future-yoga"
+	SEARCH  5:"\\home\\customer\\www\\manuelp72.sg-host.com\\public_html" => "\/Applications\/MAMP\/htdocs\/future-yoga"
+	SEARCH  6:"%5Chome%5Ccustomer%5Cwww%5Cmanuelp72.sg-host.com%5Cpublic_html" => "%2FApplications%2FMAMP%2Fhtdocs%2Ffuture-yoga"
+	SEARCH  7:"//manuelp72.sg-host.com" =========================> "//localhost/future-yoga"
+	SEARCH  8:"\/\/manuelp72.sg-host.com" =======================> "\/\/localhost\/future-yoga"
+	SEARCH  9:"%2F%2Fmanuelp72.sg-host.com" =====================> "%2F%2Flocalhost%2Ffuture-yoga"
+	SEARCH 10:"https://localhost/future-yoga" ===================> "http://localhost/future-yoga"
+	SEARCH 11:"https:\/\/localhost\/future-yoga" ================> "http:\/\/localhost\/future-yoga"
+	SEARCH 12:"https%3A%2F%2Flocalhost%2Ffuture-yoga" ===========> "http%3A%2F%2Flocalhost%2Ffuture-yoga"
+
+EVALUATE TABLE: "wp_actionscheduler_logs"_________________________[ROWS:   136][PG:   1][SCAN:text columns]
+	SEARCH  1:"/home/customer/www/manuelp72.sg-host.com/public_html" => "/Applications/MAMP/htdocs/future-yoga"
+	SEARCH  2:"\/home\/customer\/www\/manuelp72.sg-host.com\/public_html" => "\/Applications\/MAMP\/htdocs\/future-yoga"
+	SEARCH  3:"%2Fhome%2Fcustomer%2Fwww%2Fmanuelp72.sg-host.com%2Fpublic_html" => "%2FApplications%2FMAMP%2Fhtdocs%2Ffuture-yoga"
+	SEARCH  4:"\home\customer\www\manuelp72.sg-host.com\public_html" => "/Applications/MAMP/htdocs/future-yoga"
+	SEARCH  5:"\\home\\customer\\www\\manuelp72.sg-host.com\\public_html" => "\/Applications\/MAMP\/htdocs\/future-yoga"
+	SEARCH  6:"%5Chome%5Ccustomer%5Cwww%5Cmanuelp72.sg-host.com%5Cpublic_html" => "%2FApplications%2FMAMP%2Fhtdocs%2Ffuture-yoga"
+	SEARCH  7:"//manuelp72.sg-host.com" =========================> "//localhost/future-yoga"
+	SEARCH  8:"\/\/manuelp72.sg-host.com" =======================> "\/\/localhost\/future-yoga"
+	SEARCH  9:"%2F%2Fmanuelp72.sg-host.com" =====================> "%2F%2Flocalhost%2Ffuture-yoga"
+	SEARCH 10:"https://localhost/future-yoga" ===================> "http://localhost/future-yoga"
+	SEARCH 11:"https:\/\/localhost\/future-yoga" ================> "http:\/\/localhost\/future-yoga"
+	SEARCH 12:"https%3A%2F%2Flocalhost%2Ffuture-yoga" ===========> "http%3A%2F%2Flocalhost%2Ffuture-yoga"
+
+EVALUATE TABLE: "wp_commentmeta"__________________________________[ROWS:     0][PG:   0][SCAN:no columns  ]
+
+EVALUATE TABLE: "wp_comments"_____________________________________[ROWS:     4][PG:   1][SCAN:text columns]
+	SEARCH  1:"/home/customer/www/manuelp72.sg-host.com/public_html" => "/Applications/MAMP/htdocs/future-yoga"
+	SEARCH  2:"\/home\/customer\/www\/manuelp72.sg-host.com\/public_html" => "\/Applications\/MAMP\/htdocs\/future-yoga"
+	SEARCH  3:"%2Fhome%2Fcustomer%2Fwww%2Fmanuelp72.sg-host.com%2Fpublic_html" => "%2FApplications%2FMAMP%2Fhtdocs%2Ffuture-yoga"
+	SEARCH  4:"\home\customer\www\manuelp72.sg-host.com\public_html" => "/Applications/MAMP/htdocs/future-yoga"
+	SEARCH  5:"\\home\\customer\\www\\manuelp72.sg-host.com\\public_html" => "\/Applications\/MAMP\/htdocs\/future-yoga"
+	SEARCH  6:"%5Chome%5Ccustomer%5Cwww%5Cmanuelp72.sg-host.com%5Cpublic_html" => "%2FApplications%2FMAMP%2Fhtdocs%2Ffuture-yoga"
+	SEARCH  7:"//manuelp72.sg-host.com" =========================> "//localhost/future-yoga"
+	SEARCH  8:"\/\/manuelp72.sg-host.com" =======================> "\/\/localhost\/future-yoga"
+	SEARCH  9:"%2F%2Fmanuelp72.sg-host.com" =====================> "%2F%2Flocalhost%2Ffuture-yoga"
+	SEARCH 10:"https://localhost/future-yoga" ===================> "http://localhost/future-yoga"
+	SEARCH 11:"https:\/\/localhost\/future-yoga" ================> "http:\/\/localhost\/future-yoga"
+	SEARCH 12:"https%3A%2F%2Flocalhost%2Ffuture-yoga" ===========> "http%3A%2F%2Flocalhost%2Ffuture-yoga"
+
+EVALUATE TABLE: "wp_duplicator_packages"__________________________[ROWS:     0][PG:   0][SCAN:no columns  ]
+
+EVALUATE TABLE: "wp_e_events"_____________________________________[ROWS:     0][PG:   0][SCAN:no columns  ]
+
+EVALUATE TABLE: "wp_e_notes"______________________________________[ROWS:     0][PG:   0][SCAN:no columns  ]
+
+EVALUATE TABLE: "wp_e_notes_users_relations"______________________[ROWS:     0][PG:   0][SCAN:no columns  ]
+
+EVALUATE TABLE: "wp_e_submissions"________________________________[ROWS:     0][PG:   0][SCAN:no columns  ]
+
+EVALUATE TABLE: "wp_e_submissions_actions_log"____________________[ROWS:     0][PG:   0][SCAN:no columns  ]
+
+EVALUATE TABLE: "wp_e_submissions_values"_________________________[ROWS:     0][PG:   0][SCAN:no columns  ]
+
+EVALUATE TABLE: "wp_links"________________________________________[ROWS:     0][PG:   0][SCAN:no columns  ]
+
+EVALUATE TABLE: "wp_options"______________________________________[ROWS:   378][PG:   1][SCAN:text columns]
+	SEARCH  1:"/home/customer/www/manuelp72.sg-host.com/public_html" => "/Applications/MAMP/htdocs/future-yoga"
+	SEARCH  2:"\/home\/customer\/www\/manuelp72.sg-host.com\/public_html" => "\/Applications\/MAMP\/htdocs\/future-yoga"
+	SEARCH  3:"%2Fhome%2Fcustomer%2Fwww%2Fmanuelp72.sg-host.com%2Fpublic_html" => "%2FApplications%2FMAMP%2Fhtdocs%2Ffuture-yoga"
+	SEARCH  4:"\home\customer\www\manuelp72.sg-host.com\public_html" => "/Applications/MAMP/htdocs/future-yoga"
+	SEARCH  5:"\\home\\customer\\www\\manuelp72.sg-host.com\\public_html" => "\/Applications\/MAMP\/htdocs\/future-yoga"
+	SEARCH  6:"%5Chome%5Ccustomer%5Cwww%5Cmanuelp72.sg-host.com%5Cpublic_html" => "%2FApplications%2FMAMP%2Fhtdocs%2Ffuture-yoga"
+	SEARCH  7:"//manuelp72.sg-host.com" =========================> "//localhost/future-yoga"
+	SEARCH  8:"\/\/manuelp72.sg-host.com" =======================> "\/\/localhost\/future-yoga"
+	SEARCH  9:"%2F%2Fmanuelp72.sg-host.com" =====================> "%2F%2Flocalhost%2Ffuture-yoga"
+	SEARCH 10:"https://localhost/future-yoga" ===================> "http://localhost/future-yoga"
+	SEARCH 11:"https:\/\/localhost\/future-yoga" ================> "http:\/\/localhost\/future-yoga"
+	SEARCH 12:"https%3A%2F%2Flocalhost%2Ffuture-yoga" ===========> "http%3A%2F%2Flocalhost%2Ffuture-yoga"
+
+EVALUATE TABLE: "wp_postmeta"_____________________________________[ROWS:  5868][PG:   2][SCAN:text columns]
+	SEARCH  1:"/home/customer/www/manuelp72.sg-host.com/public_html" => "/Applications/MAMP/htdocs/future-yoga"
+	SEARCH  2:"\/home\/customer\/www\/manuelp72.sg-host.com\/public_html" => "\/Applications\/MAMP\/htdocs\/future-yoga"
+	SEARCH  3:"%2Fhome%2Fcustomer%2Fwww%2Fmanuelp72.sg-host.com%2Fpublic_html" => "%2FApplications%2FMAMP%2Fhtdocs%2Ffuture-yoga"
+	SEARCH  4:"\home\customer\www\manuelp72.sg-host.com\public_html" => "/Applications/MAMP/htdocs/future-yoga"
+	SEARCH  5:"\\home\\customer\\www\\manuelp72.sg-host.com\\public_html" => "\/Applications\/MAMP\/htdocs\/future-yoga"
+	SEARCH  6:"%5Chome%5Ccustomer%5Cwww%5Cmanuelp72.sg-host.com%5Cpublic_html" => "%2FApplications%2FMAMP%2Fhtdocs%2Ffuture-yoga"
+	SEARCH  7:"//manuelp72.sg-host.com" =========================> "//localhost/future-yoga"
+	SEARCH  8:"\/\/manuelp72.sg-host.com" =======================> "\/\/localhost\/future-yoga"
+	SEARCH  9:"%2F%2Fmanuelp72.sg-host.com" =====================> "%2F%2Flocalhost%2Ffuture-yoga"
+	SEARCH 10:"https://localhost/future-yoga" ===================> "http://localhost/future-yoga"
+	SEARCH 11:"https:\/\/localhost\/future-yoga" ================> "http:\/\/localhost\/future-yoga"
+	SEARCH 12:"https%3A%2F%2Flocalhost%2Ffuture-yoga" ===========> "http%3A%2F%2Flocalhost%2Ffuture-yoga"
+
+EVALUATE TABLE: "wp_posts"________________________________________[ROWS:   818][PG:   1][SCAN:text columns]
+	SEARCH  1:"/home/customer/www/manuelp72.sg-host.com/public_html" => "/Applications/MAMP/htdocs/future-yoga"
+	SEARCH  2:"\/home\/customer\/www\/manuelp72.sg-host.com\/public_html" => "\/Applications\/MAMP\/htdocs\/future-yoga"
+	SEARCH  3:"%2Fhome%2Fcustomer%2Fwww%2Fmanuelp72.sg-host.com%2Fpublic_html" => "%2FApplications%2FMAMP%2Fhtdocs%2Ffuture-yoga"
+	SEARCH  4:"\home\customer\www\manuelp72.sg-host.com\public_html" => "/Applications/MAMP/htdocs/future-yoga"
+	SEARCH  5:"\\home\\customer\\www\\manuelp72.sg-host.com\\public_html" => "\/Applications\/MAMP\/htdocs\/future-yoga"
+	SEARCH  6:"%5Chome%5Ccustomer%5Cwww%5Cmanuelp72.sg-host.com%5Cpublic_html" => "%2FApplications%2FMAMP%2Fhtdocs%2Ffuture-yoga"
+	SEARCH  7:"//manuelp72.sg-host.com" =========================> "//localhost/future-yoga"
+	SEARCH  8:"\/\/manuelp72.sg-host.com" =======================> "\/\/localhost\/future-yoga"
+	SEARCH  9:"%2F%2Fmanuelp72.sg-host.com" =====================> "%2F%2Flocalhost%2Ffuture-yoga"
+	SEARCH 10:"https://localhost/future-yoga" ===================> "http://localhost/future-yoga"
+	SEARCH 11:"https:\/\/localhost\/future-yoga" ================> "http:\/\/localhost\/future-yoga"
+	SEARCH 12:"https%3A%2F%2Flocalhost%2Ffuture-yoga" ===========> "http%3A%2F%2Flocalhost%2Ffuture-yoga"
+
+EVALUATE TABLE: "wp_shortpixel_folders"___________________________[ROWS:     0][PG:   0][SCAN:no columns  ]
+
+EVALUATE TABLE: "wp_shortpixel_meta"______________________________[ROWS:     0][PG:   0][SCAN:no columns  ]
+
+EVALUATE TABLE: "wp_shortpixel_postmeta"__________________________[ROWS:   128][PG:   1][SCAN:text columns]
+	SEARCH  1:"/home/customer/www/manuelp72.sg-host.com/public_html" => "/Applications/MAMP/htdocs/future-yoga"
+	SEARCH  2:"\/home\/customer\/www\/manuelp72.sg-host.com\/public_html" => "\/Applications\/MAMP\/htdocs\/future-yoga"
+	SEARCH  3:"%2Fhome%2Fcustomer%2Fwww%2Fmanuelp72.sg-host.com%2Fpublic_html" => "%2FApplications%2FMAMP%2Fhtdocs%2Ffuture-yoga"
+	SEARCH  4:"\home\customer\www\manuelp72.sg-host.com\public_html" => "/Applications/MAMP/htdocs/future-yoga"
+	SEARCH  5:"\\home\\customer\\www\\manuelp72.sg-host.com\\public_html" => "\/Applications\/MAMP\/htdocs\/future-yoga"
+	SEARCH  6:"%5Chome%5Ccustomer%5Cwww%5Cmanuelp72.sg-host.com%5Cpublic_html" => "%2FApplications%2FMAMP%2Fhtdocs%2Ffuture-yoga"
+	SEARCH  7:"//manuelp72.sg-host.com" =========================> "//localhost/future-yoga"
+	SEARCH  8:"\/\/manuelp72.sg-host.com" =======================> "\/\/localhost\/future-yoga"
+	SEARCH  9:"%2F%2Fmanuelp72.sg-host.com" =====================> "%2F%2Flocalhost%2Ffuture-yoga"
+	SEARCH 10:"https://localhost/future-yoga" ===================> "http://localhost/future-yoga"
+	SEARCH 11:"https:\/\/localhost\/future-yoga" ================> "http:\/\/localhost\/future-yoga"
+	SEARCH 12:"https%3A%2F%2Flocalhost%2Ffuture-yoga" ===========> "http%3A%2F%2Flocalhost%2Ffuture-yoga"
+
+EVALUATE TABLE: "wp_shortpixel_queue"_____________________________[ROWS:   107][PG:   1][SCAN:text columns]
+	SEARCH  1:"/home/customer/www/manuelp72.sg-host.com/public_html" => "/Applications/MAMP/htdocs/future-yoga"
+	SEARCH  2:"\/home\/customer\/www\/manuelp72.sg-host.com\/public_html" => "\/Applications\/MAMP\/htdocs\/future-yoga"
+	SEARCH  3:"%2Fhome%2Fcustomer%2Fwww%2Fmanuelp72.sg-host.com%2Fpublic_html" => "%2FApplications%2FMAMP%2Fhtdocs%2Ffuture-yoga"
+	SEARCH  4:"\home\customer\www\manuelp72.sg-host.com\public_html" => "/Applications/MAMP/htdocs/future-yoga"
+	SEARCH  5:"\\home\\customer\\www\\manuelp72.sg-host.com\\public_html" => "\/Applications\/MAMP\/htdocs\/future-yoga"
+	SEARCH  6:"%5Chome%5Ccustomer%5Cwww%5Cmanuelp72.sg-host.com%5Cpublic_html" => "%2FApplications%2FMAMP%2Fhtdocs%2Ffuture-yoga"
+	SEARCH  7:"//manuelp72.sg-host.com" =========================> "//localhost/future-yoga"
+	SEARCH  8:"\/\/manuelp72.sg-host.com" =======================> "\/\/localhost\/future-yoga"
+	SEARCH  9:"%2F%2Fmanuelp72.sg-host.com" =====================> "%2F%2Flocalhost%2Ffuture-yoga"
+	SEARCH 10:"https://localhost/future-yoga" ===================> "http://localhost/future-yoga"
+	SEARCH 11:"https:\/\/localhost\/future-yoga" ================> "http:\/\/localhost\/future-yoga"
+	SEARCH 12:"https%3A%2F%2Flocalhost%2Ffuture-yoga" ===========> "http%3A%2F%2Flocalhost%2Ffuture-yoga"
+
+EVALUATE TABLE: "wp_term_relationships"___________________________[ROWS:    93][PG:   1][SCAN:text columns]
+	SEARCH  1:"/home/customer/www/manuelp72.sg-host.com/public_html" => "/Applications/MAMP/htdocs/future-yoga"
+	SEARCH  2:"\/home\/customer\/www\/manuelp72.sg-host.com\/public_html" => "\/Applications\/MAMP\/htdocs\/future-yoga"
+	SEARCH  3:"%2Fhome%2Fcustomer%2Fwww%2Fmanuelp72.sg-host.com%2Fpublic_html" => "%2FApplications%2FMAMP%2Fhtdocs%2Ffuture-yoga"
+	SEARCH  4:"\home\customer\www\manuelp72.sg-host.com\public_html" => "/Applications/MAMP/htdocs/future-yoga"
+	SEARCH  5:"\\home\\customer\\www\\manuelp72.sg-host.com\\public_html" => "\/Applications\/MAMP\/htdocs\/future-yoga"
+	SEARCH  6:"%5Chome%5Ccustomer%5Cwww%5Cmanuelp72.sg-host.com%5Cpublic_html" => "%2FApplications%2FMAMP%2Fhtdocs%2Ffuture-yoga"
+	SEARCH  7:"//manuelp72.sg-host.com" =========================> "//localhost/future-yoga"
+	SEARCH  8:"\/\/manuelp72.sg-host.com" =======================> "\/\/localhost\/future-yoga"
+	SEARCH  9:"%2F%2Fmanuelp72.sg-host.com" =====================> "%2F%2Flocalhost%2Ffuture-yoga"
+	SEARCH 10:"https://localhost/future-yoga" ===================> "http://localhost/future-yoga"
+	SEARCH 11:"https:\/\/localhost\/future-yoga" ================> "http:\/\/localhost\/future-yoga"
+	SEARCH 12:"https%3A%2F%2Flocalhost%2Ffuture-yoga" ===========> "http%3A%2F%2Flocalhost%2Ffuture-yoga"
+
+EVALUATE TABLE: "wp_term_taxonomy"________________________________[ROWS:    24][PG:   1][SCAN:text columns]
+	SEARCH  1:"/home/customer/www/manuelp72.sg-host.com/public_html" => "/Applications/MAMP/htdocs/future-yoga"
+	SEARCH  2:"\/home\/customer\/www\/manuelp72.sg-host.com\/public_html" => "\/Applications\/MAMP\/htdocs\/future-yoga"
+	SEARCH  3:"%2Fhome%2Fcustomer%2Fwww%2Fmanuelp72.sg-host.com%2Fpublic_html" => "%2FApplications%2FMAMP%2Fhtdocs%2Ffuture-yoga"
+	SEARCH  4:"\home\customer\www\manuelp72.sg-host.com\public_html" => "/Applications/MAMP/htdocs/future-yoga"
+	SEARCH  5:"\\home\\customer\\www\\manuelp72.sg-host.com\\public_html" => "\/Applications\/MAMP\/htdocs\/future-yoga"
+	SEARCH  6:"%5Chome%5Ccustomer%5Cwww%5Cmanuelp72.sg-host.com%5Cpublic_html" => "%2FApplications%2FMAMP%2Fhtdocs%2Ffuture-yoga"
+	SEARCH  7:"//manuelp72.sg-host.com" =========================> "//localhost/future-yoga"
+	SEARCH  8:"\/\/manuelp72.sg-host.com" =======================> "\/\/localhost\/future-yoga"
+	SEARCH  9:"%2F%2Fmanuelp72.sg-host.com" =====================> "%2F%2Flocalhost%2Ffuture-yoga"
+	SEARCH 10:"https://localhost/future-yoga" ===================> "http://localhost/future-yoga"
+	SEARCH 11:"https:\/\/localhost\/future-yoga" ================> "http:\/\/localhost\/future-yoga"
+	SEARCH 12:"https%3A%2F%2Flocalhost%2Ffuture-yoga" ===========> "http%3A%2F%2Flocalhost%2Ffuture-yoga"
+
+EVALUATE TABLE: "wp_termmeta"_____________________________________[ROWS:     0][PG:   0][SCAN:no columns  ]
+
+EVALUATE TABLE: "wp_terms"________________________________________[ROWS:    24][PG:   1][SCAN:text columns]
+	SEARCH  1:"/home/customer/www/manuelp72.sg-host.com/public_html" => "/Applications/MAMP/htdocs/future-yoga"
+	SEARCH  2:"\/home\/customer\/www\/manuelp72.sg-host.com\/public_html" => "\/Applications\/MAMP\/htdocs\/future-yoga"
+	SEARCH  3:"%2Fhome%2Fcustomer%2Fwww%2Fmanuelp72.sg-host.com%2Fpublic_html" => "%2FApplications%2FMAMP%2Fhtdocs%2Ffuture-yoga"
+	SEARCH  4:"\home\customer\www\manuelp72.sg-host.com\public_html" => "/Applications/MAMP/htdocs/future-yoga"
+	SEARCH  5:"\\home\\customer\\www\\manuelp72.sg-host.com\\public_html" => "\/Applications\/MAMP\/htdocs\/future-yoga"
+	SEARCH  6:"%5Chome%5Ccustomer%5Cwww%5Cmanuelp72.sg-host.com%5Cpublic_html" => "%2FApplications%2FMAMP%2Fhtdocs%2Ffuture-yoga"
+	SEARCH  7:"//manuelp72.sg-host.com" =========================> "//localhost/future-yoga"
+	SEARCH  8:"\/\/manuelp72.sg-host.com" =======================> "\/\/localhost\/future-yoga"
+	SEARCH  9:"%2F%2Fmanuelp72.sg-host.com" =====================> "%2F%2Flocalhost%2Ffuture-yoga"
+	SEARCH 10:"https://localhost/future-yoga" ===================> "http://localhost/future-yoga"
+	SEARCH 11:"https:\/\/localhost\/future-yoga" ================> "http:\/\/localhost\/future-yoga"
+	SEARCH 12:"https%3A%2F%2Flocalhost%2Ffuture-yoga" ===========> "http%3A%2F%2Flocalhost%2Ffuture-yoga"
+
+EVALUATE TABLE: "wp_usermeta"_____________________________________[ROWS:    52][PG:   1][SCAN:text columns]
+	SEARCH  1:"/home/customer/www/manuelp72.sg-host.com/public_html" => "/Applications/MAMP/htdocs/future-yoga"
+	SEARCH  2:"\/home\/customer\/www\/manuelp72.sg-host.com\/public_html" => "\/Applications\/MAMP\/htdocs\/future-yoga"
+	SEARCH  3:"%2Fhome%2Fcustomer%2Fwww%2Fmanuelp72.sg-host.com%2Fpublic_html" => "%2FApplications%2FMAMP%2Fhtdocs%2Ffuture-yoga"
+	SEARCH  4:"\home\customer\www\manuelp72.sg-host.com\public_html" => "/Applications/MAMP/htdocs/future-yoga"
+	SEARCH  5:"\\home\\customer\\www\\manuelp72.sg-host.com\\public_html" => "\/Applications\/MAMP\/htdocs\/future-yoga"
+	SEARCH  6:"%5Chome%5Ccustomer%5Cwww%5Cmanuelp72.sg-host.com%5Cpublic_html" => "%2FApplications%2FMAMP%2Fhtdocs%2Ffuture-yoga"
+	SEARCH  7:"//manuelp72.sg-host.com" =========================> "//localhost/future-yoga"
+	SEARCH  8:"\/\/manuelp72.sg-host.com" =======================> "\/\/localhost\/future-yoga"
+	SEARCH  9:"%2F%2Fmanuelp72.sg-host.com" =====================> "%2F%2Flocalhost%2Ffuture-yoga"
+	SEARCH 10:"https://localhost/future-yoga" ===================> "http://localhost/future-yoga"
+	SEARCH 11:"https:\/\/localhost\/future-yoga" ================> "http:\/\/localhost\/future-yoga"
+	SEARCH 12:"https%3A%2F%2Flocalhost%2Ffuture-yoga" ===========> "http%3A%2F%2Flocalhost%2Ffuture-yoga"
+
+EVALUATE TABLE: "wp_users"________________________________________[ROWS:     2][PG:   1][SCAN:text columns]
+	SEARCH  1:"/home/customer/www/manuelp72.sg-host.com/public_html" => "/Applications/MAMP/htdocs/future-yoga"
+	SEARCH  2:"\/home\/customer\/www\/manuelp72.sg-host.com\/public_html" => "\/Applications\/MAMP\/htdocs\/future-yoga"
+	SEARCH  3:"%2Fhome%2Fcustomer%2Fwww%2Fmanuelp72.sg-host.com%2Fpublic_html" => "%2FApplications%2FMAMP%2Fhtdocs%2Ffuture-yoga"
+	SEARCH  4:"\home\customer\www\manuelp72.sg-host.com\public_html" => "/Applications/MAMP/htdocs/future-yoga"
+	SEARCH  5:"\\home\\customer\\www\\manuelp72.sg-host.com\\public_html" => "\/Applications\/MAMP\/htdocs\/future-yoga"
+	SEARCH  6:"%5Chome%5Ccustomer%5Cwww%5Cmanuelp72.sg-host.com%5Cpublic_html" => "%2FApplications%2FMAMP%2Fhtdocs%2Ffuture-yoga"
+	SEARCH  7:"//manuelp72.sg-host.com" =========================> "//localhost/future-yoga"
+	SEARCH  8:"\/\/manuelp72.sg-host.com" =======================> "\/\/localhost\/future-yoga"
+	SEARCH  9:"%2F%2Fmanuelp72.sg-host.com" =====================> "%2F%2Flocalhost%2Ffuture-yoga"
+	SEARCH 10:"https://localhost/future-yoga" ===================> "http://localhost/future-yoga"
+	SEARCH 11:"https:\/\/localhost\/future-yoga" ================> "http:\/\/localhost\/future-yoga"
+	SEARCH 12:"https%3A%2F%2Flocalhost%2Ffuture-yoga" ===========> "http%3A%2F%2Flocalhost%2Ffuture-yoga"
+
+EVALUATE TABLE: "wp_wpforms_tasks_meta"___________________________[ROWS:    18][PG:   1][SCAN:text columns]
+	SEARCH  1:"/home/customer/www/manuelp72.sg-host.com/public_html" => "/Applications/MAMP/htdocs/future-yoga"
+	SEARCH  2:"\/home\/customer\/www\/manuelp72.sg-host.com\/public_html" => "\/Applications\/MAMP\/htdocs\/future-yoga"
+	SEARCH  3:"%2Fhome%2Fcustomer%2Fwww%2Fmanuelp72.sg-host.com%2Fpublic_html" => "%2FApplications%2FMAMP%2Fhtdocs%2Ffuture-yoga"
+	SEARCH  4:"\home\customer\www\manuelp72.sg-host.com\public_html" => "/Applications/MAMP/htdocs/future-yoga"
+	SEARCH  5:"\\home\\customer\\www\\manuelp72.sg-host.com\\public_html" => "\/Applications\/MAMP\/htdocs\/future-yoga"
+	SEARCH  6:"%5Chome%5Ccustomer%5Cwww%5Cmanuelp72.sg-host.com%5Cpublic_html" => "%2FApplications%2FMAMP%2Fhtdocs%2Ffuture-yoga"
+	SEARCH  7:"//manuelp72.sg-host.com" =========================> "//localhost/future-yoga"
+	SEARCH  8:"\/\/manuelp72.sg-host.com" =======================> "\/\/localhost\/future-yoga"
+	SEARCH  9:"%2F%2Fmanuelp72.sg-host.com" =====================> "%2F%2Flocalhost%2Ffuture-yoga"
+	SEARCH 10:"https://localhost/future-yoga" ===================> "http://localhost/future-yoga"
+	SEARCH 11:"https:\/\/localhost\/future-yoga" ================> "http:\/\/localhost\/future-yoga"
+	SEARCH 12:"https%3A%2F%2Flocalhost%2Ffuture-yoga" ===========> "http%3A%2F%2Flocalhost%2Ffuture-yoga"
+--------------------------------------
+SCANNED:	Tables:28 	|	 Rows:7702 	|	 Cells:48698 
+UPDATED:	Tables:5 	|	 Rows:1339 	|	 Cells:1808 
+ERRORS:		0 
+RUNTIME:	3.748300 sec
+
+====================================
+REMOVE LICENSE KEY
+====================================
+
+====================================
+CREATE NEW ADMIN USER
+====================================
+
+====================================
+CONFIGURATION FILE UPDATES
+====================================
+	UPDATE DB_NAME "** OBSCURED **"
+	UPDATE DB_USER "** OBSCURED **"
+	UPDATE DB_PASSWORD "** OBSCURED **"
+	UPDATE DB_HOST ""localhost""
+	REMOVE WPCACHEHOME
+	
+*** UPDATED WP CONFIG FILE ***
+
+====================================
+HTACCESS UPDATE MODE: "NEW"
+====================================
+- PASS: Successfully created a new .htaccess file.
+- PASS: Existing Apache '.htaccess__[HASH]' was removed
+
+====================================
+GENERAL UPDATES & CLEANUP
+====================================
+
+====================================
+DEACTIVATE PLUGINS CHECK
+====================================
+Auto Deactivated plugins list here: Array
+(
+    [0] => really-simple-ssl/rlrsssl-really-simple-ssl.php
+    [1] => simple-google-recaptcha/simple-google-recaptcha.php
+    [2] => js_composer/js_composer.php
+)
+
+MAINTENANCE MODE DISABLE
+
+====================================
+NOTICES TEST
+====================================
+No General Notices Found
+
+
+====================================
+CLEANUP TMP FILES
+====================================
+
+====================================
+FINAL REPORT NOTICES
+====================================
+
+STEP-3 COMPLETE @ 02:23:24 - RUNTIME: 3.8085 sec. 
+
+
+====================================
+FINAL REPORT NOTICES LIST
+====================================
+-----------------------
+[INFO] No general notices
+	SECTIONS: general
+
+-----------------------
+[INFO] No errors in database
+	SECTIONS: database
+
+-----------------------
+[INFO] No search and replace data errors
+	SECTIONS: search_replace
+
+-----------------------
+[INFO] No files extraction errors
+	SECTIONS: files
+
+====================================
