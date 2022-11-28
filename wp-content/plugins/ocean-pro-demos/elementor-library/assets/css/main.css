@@ -1,0 +1,16 @@
+.elementor-add-new-section .elementor-add-otl-button {
+	background-color: transparent;
+	margin-left: 5px;
+	background-image: url('../img/ocean.svg');
+	background-repeat: no-repeat;
+	background-position: 48% 50%;
+	background-size: 40px auto;
+	padding-top: 3px;
+}
+.elementor-add-new-section .elementor-add-otl-button i.fa {
+	visibility: hidden;
+}
+.elementor-add-new-section .elementor-add-otl-button i:before {
+	content: ".";
+	color: transparent;
+}

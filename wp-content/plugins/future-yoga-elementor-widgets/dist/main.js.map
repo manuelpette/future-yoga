@@ -1,0 +1,1 @@
+{"mappings":"AAQGA,OAL0B,mCAAmCC","sources":["assets/scripts/main.js"],"sourcesContent":["import '../styles/main.scss';\n\n(function($){\n    const isEventArchive = $('.post-type-archive-tribe_events').length;\n\n    if(isEventArchive) {\n        /* $('.calendar-single-event__cats') */\n    }\n})(jQuery);"],"names":["jQuery","length"],"version":3,"file":"main.js.map"}

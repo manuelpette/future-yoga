@@ -98,7 +98,7 @@ function event_teacher(){
 
 	$teacher = get_field('insegnante', $post_override->ID);
 	$teacher_id = $teacher->ID;
-	
+
 	if(!empty($teacher)) {
 		$teacher = get_the_title($teacher_id);
 		$teacher_cat = get_field('categoria_principale', $teacher_id);
@@ -144,9 +144,9 @@ function my_post_layout_class( $class ) {
 add_filter( 'ocean_post_layout_class', 'my_post_layout_class', 20 );
 
 add_filter('ocean_page_header_overlay', function ($overlay_markup) {
-	global $post;
+	global $post_override;
 
-	$featured_image_url = get_the_post_thumbnail_url();
+	$featured_image_url = get_the_post_thumbnail_url($post_override->ID);
 	if (!empty($featured_image_url)) {
 		$new_markup = '<span style="background-image: url(\'' . $featured_image_url . '\');" ';
 		$overlay_markup = str_replace('<span ', $new_markup, $overlay_markup);
@@ -179,7 +179,7 @@ function get_filtered_events($query_params, $offset = 0, $filtered_events = arra
 	if($offset) {
 		$query_params['offset'] = $offset;
 	}
-	
+
 	$events = new WP_Query($query_params);
 
 	$next_offset = $offset;
@@ -191,7 +191,7 @@ function get_filtered_events($query_params, $offset = 0, $filtered_events = arra
 			$events->the_post();
 			$current = get_post();
 			//DUMP($current->post_title . tribe_get_start_date($current->ID, true, 'Y-m-d H:i:s'));
-			
+
 			if(tribe_is_recurring_event(get_the_ID())) {
 				if(array_search($current->post_parent, $parents_cache) === false && $current->post_parent !== 0) {
 					$parents_cache[] = $current->post_parent;
@@ -214,7 +214,7 @@ function get_filtered_events($query_params, $offset = 0, $filtered_events = arra
 			'parents_cache' => $parents_cache
 		);
 	}
-		
+
 	if(count($filtered_events) < $query_params['posts_per_page']) {
 		return get_filtered_events($query_params, $next_offset, $filtered_events, $parents_cache);
 	} else {
@@ -233,17 +233,17 @@ function load_more_events_callback()
     $query_params['tax_query'] = array((array)$query_params['tax_query'][0]);
 	$query_offset = (int)filter_var(trim( $_POST['next_offset'] ), FILTER_SANITIZE_STRING);
 	$parents_cache = json_decode(filter_var(trim( $_POST['parents_cache'] ), FILTER_SANITIZE_STRING));
-	
+
 	$filtered_events = get_filtered_events($query_params, $query_offset, array(), $parents_cache);
 	$events = $filtered_events['posts'];
 	$next_offset = $filtered_events['next_offset'];
 	$parents_cache = $filtered_events['parents_cache'];
-	
+
 	ob_start();
 	get_events_list_markup($events, $query_params, $next_offset, $parents_cache);
 	$markup = ob_get_clean();
 
-    wp_send_json( array( 
+    wp_send_json( array(
 		'markup' => $markup,
 		'query_params' => $query_params,
 		'next_offset' => $next_offset,
@@ -350,7 +350,7 @@ function get_events_list_markup($events, $query_params, $next_offset, $parents_c
 				<span><?php _e('Carica altri', 'futureyoga'); ?></span>
 			</button>
 		</div>
-	<?php endif; 
+	<?php endif;
 }
 
 add_filter( 'auto_update_plugin', '__return_false' );

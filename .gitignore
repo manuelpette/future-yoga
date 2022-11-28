@@ -3,3 +3,5 @@ wp-content/uploads/**/*
 wp-config.php
 php_errorlog
 .vscode
+node_modules
+.parcel-cache

@@ -1,0 +1,338 @@
+.otl-template-library-preview {
+	overflow: hidden;
+	margin: auto;
+	width: 100%;
+	height: 100%;
+	-webkit-transition: width .2s, height .2s;
+	transition: width .2s, height .2s;
+}
+
+.otl-template-library-preview>iframe {
+	width: 150%;
+	height: 150%;
+	-webkit-transform: scale(.666) translateX(-25%) translateY(-25%);
+	-ms-transform: scale(.666) translateX(-25%) translateY(-25%);
+	transform: scale(.666) translateX(-25%) translateY(-25%);
+}
+
+.otl-template-library-logo-wrap {
+	display: inline-block;
+	margin-right: 10px;
+	width: 30px;
+	height: 30px;
+	border-radius: 100%;
+	background-color: #161d30;
+	color: #fff;
+	text-align: center;
+	line-height: 30px;
+	background-image: url('../img/ocean.svg');
+	background-repeat: no-repeat;
+	background-position: 48% 50%;
+	background-size: 16px auto;
+}
+
+.otl-template-library-logo-wrap>i {
+	position: relative;
+	top: 1px;
+}
+
+.otl-template-library-logo-title {
+	padding-top: 2px;
+}
+
+.otl-template-library-responsive-menu-item {
+	display: inline-block;
+	padding: 15px 0;
+	width: 40px;
+	cursor: pointer;
+}
+
+.otl-template-library-responsive-menu-item.elementor-active {
+	border-bottom: 3px solid #562dd4;
+	/* background-image: -webkit-gradient(linear, left top, left bottom, from(#f1f3f5), to(#fff));
+	background-image: -webkit-linear-gradient(top, #f1f3f5, #fff);
+	background-image: linear-gradient(to bottom, #f1f3f5, #fff); */
+	background-image: linear-gradient(to bottom,#666,#666);
+	background-image: -webkit-linear-gradient(to bottom,#666,#666);
+	background-image: -webkit-gradient(linear, left top, left bottom, from(#666), to(#666));
+}
+
+.otl-template-library-header-menu .elementor-template-library-menu-item.elementor-active {
+	border-bottom-color: #562dd4;
+}
+
+#otl-template-library-toolbar {
+	display: -webkit-box;
+	display: -webkit-flex;
+	display: -ms-flexbox;
+	display: flex;
+	-webkit-box-align: center;
+	-webkit-align-items: center;
+	align-items: center;
+	-ms-flex-align: center;
+	-webkit-box-pack: justify;
+	-ms-flex-pack: justify;
+	-webkit-justify-content: space-between;
+	justify-content: space-between;
+}
+
+#otl-template-library-toolbar-search,
+#otl-template-library-toolbar-filter {
+	position: relative;
+	width: 200px;
+}
+
+#otl-template-library-toolbar-search i,
+.otl-template-library-filter-btn i {
+	position: absolute;
+	top: 50%;
+	right: 0;
+	-webkit-transform: translateY(-50%);
+	-ms-transform: translateY(-50%);
+	transform: translateY(-50%);
+}
+
+.otl-template-library-filter-btn {
+	display: block;
+	text-align: left;
+	text-transform: uppercase;
+	cursor: pointer;
+}
+
+#otl-template-library-toolbar-counter {
+	font-size: 12px;
+}
+
+#otl-template-library-search {
+	border: none;
+}
+
+#otl-template-library-search,
+.otl-template-library-filter-btn {
+	padding: 8px 15px 8px 0;
+	border-bottom: 1px solid #d5dadf;
+	border-radius: 0;
+	font-size: 12px;
+}
+
+#otl-template-library-filter-tags {
+	position: absolute;
+	top: 100%;
+	left: 0;
+	z-index: 999;
+	display: none;
+	margin-top: 10px;
+	padding: 10px;
+	width: 270%;
+	border-radius: 0 2px 2px;
+	background-color: #fff;
+	-webkit-box-shadow: 0 4px 8px rgba(0, 0, 0, .05);
+	box-shadow: 0 4px 8px rgba(0, 0, 0, .05);
+}
+
+#otl-template-library-filter-tags>li {
+	float: left;
+	padding: 10px;
+	width: 25%;
+	text-align: left;
+	text-transform: capitalize;
+	cursor: pointer;
+	color: #666666;
+}
+
+#otl-template-library-filter-tags>li:hover,
+#otl-template-library-filter-tags>li.active {
+	color: #2E3E64;
+}
+
+#otl-template-library-filter-tags:before {
+	position: absolute;
+	bottom: 100%;
+	left: 0;
+	width: 0;
+	height: 0;
+	border: solid transparent;
+	border-width: 0 10px 10px 0;
+	border-bottom-color: #fff;
+	content: " ";
+	pointer-events: none;
+}
+
+#otl-template-library-templates {
+	height: calc(100% + 30px);
+}
+
+.otl-template-library-templates-window {
+	position: relative;
+	overflow-y: auto;
+	margin: 10px -15px 0;
+	height: calc(100% - 45px);
+}
+
+#otl-template-library-templates-list {
+	display: -webkit-box;
+	display: -webkit-flex;
+	display: -ms-flexbox;
+	display: flex;
+	-webkit-box-align: start;
+	-webkit-align-items: flex-start;
+	align-items: flex-start;
+	-ms-flex-align: start;
+	-webkit-flex-wrap: wrap;
+	-ms-flex-wrap: wrap;
+	flex-wrap: wrap;
+}
+
+.otl-template-library-template {
+	position: relative;
+	overflow: hidden;
+	margin: 15px;
+	border-radius: 2px;
+	background-color: #fff;
+	-webkit-box-shadow: 0 1px 20px 0 rgba(0, 0, 0, .07);
+	box-shadow: 0 1px 20px 0 rgba(0, 0, 0, .07);
+}
+
+.otl-template-library-templates--section .otl-template-library-template {
+	width: calc(33.333% - 30px);
+}
+
+.otl-template-library-templates--page .otl-template-library-template {
+	width: calc(25% - 30px);
+}
+
+.otl-template-library-template-body {
+	position: relative;
+}
+
+.otl-template-library-template-preview {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background-color: rgba(0, 0, 0, .5);
+	opacity: 0;
+	cursor: pointer;
+	-webkit-transition: opacity .5s;
+	transition: opacity .5s;
+}
+
+.otl-template-library-template-preview i {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	color: #d5dadf;
+	font-size: 20px;
+	-webkit-transform: translate(-50%, -50%);
+	-ms-transform: translate(-50%, -50%);
+	transform: translate(-50%, -50%);
+}
+
+.otl-template-library-template-badge {
+	position: absolute;
+	top: 10px;
+	right: 10px;
+	display: inline-block;
+	padding: 2px 4px;
+	border-radius: 2px;
+	background-color: #e6a803;
+	color: #fff;
+	text-transform: uppercase;
+	letter-spacing: .5px;
+	font-size: 10px;
+}
+
+.otl-template-library-template:hover .otl-template-library-template-preview {
+	opacity: 1;
+}
+
+.otl-template-library-template-thumbnail {
+	display: block;
+	width: 100%;
+}
+
+.otl-template-library-template-footer {
+	position: absolute;
+	bottom: 0;
+	left: 0;
+	display: -webkit-box;
+	display: -webkit-flex;
+	display: -ms-flexbox;
+	display: flex;
+	-webkit-box-align: center;
+	-webkit-align-items: center;
+	align-items: center;
+	-ms-flex-align: center;
+	-webkit-box-pack: justify;
+	-ms-flex-pack: justify;
+	-webkit-justify-content: space-between;
+	justify-content: space-between;
+	padding: 10px;
+	width: 100%;
+	background-color: #fff;
+	font-size: 11px;
+	line-height: 1;
+	-webkit-transition: -webkit-transform .5s;
+	transition: -webkit-transform .5s;
+	transition: transform .5s;
+	transition: transform .5s, -webkit-transform .5s;
+	-webkit-transform: translateY(100%);
+	-ms-transform: translateY(100%);
+	transform: translateY(100%);
+}
+
+.otl-template-library-template:hover .otl-template-library-template-footer {
+	-webkit-transform: translateY(0);
+	-ms-transform: translateY(0);
+	transform: translateY(0);
+}
+
+.otl-template-library-template .otl-template-library-pro-button {
+	color: #e6a803;
+}
+
+.otl-template-library-template .otl-template-library-pro-button:hover,
+.otl-template-library-template .otl-template-library-pro-button:focus {
+	color: #e6a803;
+}
+
+.otl-template-library-template .otl-template-library-insert-button {
+	color: #562dd4;
+}
+
+.otl-template-library-template .otl-template-library-insert-button:hover,
+.otl-template-library-template .otl-template-library-insert-button:focus {
+	color: #7857dd;
+}
+
+.otl-template-library-template .otl-template-library-preview-button {
+	color: #495157;
+}
+
+.otl-template-library-template .otl-template-library-preview-button:hover,
+.otl-template-library-template .otl-template-library-preview-button:focus {
+	color: #606b73;
+}
+
+#elementor-template-library-header-preview .otl-template-library-pro-button {
+	background-color: #e6a803;
+	color: #fff;
+}
+
+#elementor-template-library-header-preview .otl-template-library-pro-button:hover,
+#elementor-template-library-header-preview .otl-template-library-pro-button:focus {
+	background-color: #e6a803;
+	color: #fff;
+}
+
+#elementor-template-library-header-preview .otl-template-library-insert-button {
+	background-color: #161d30;
+	color: #fff;
+}
+
+#elementor-template-library-header-preview .otl-template-library-insert-button:hover,
+#elementor-template-library-header-preview .otl-template-library-insert-button:focus {
+	background-color: #7857dd;
+	color: #fff;
+}

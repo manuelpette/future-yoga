@@ -1,0 +1,190 @@
+.fy-elementor-plugin {
+    .tribe-events-view {
+        .tribe-events-c-top-bar__datepicker-button {
+            background-color: transparent;
+        }
+
+        .tribe-events-c-subscribe-dropdown__button {
+            background-color: var(--e-global-color-primary);
+            color: #fff;
+
+            button {
+                background-color: transparent;
+            }
+        }
+
+        .tribe-events-calendar-month__calendar-event-title-link {
+            font-weight: 700;
+        }
+
+        .calendar-legend {
+            border: 1px solid gainsboro;
+            width: 100%;
+            margin: 0 0 30px 0;
+            padding: 20px;
+            position: relative;
+
+            h3 {
+                position: absolute;
+                top: 0;
+                transform: translateY(-50%);
+                background: #fff;
+                padding: 10px;
+                font-weight: 500;
+            }
+
+            ul {
+                display: flex;
+                flex-wrap: wrap;
+                align-items: center;
+                justify-content: flex-start;
+
+                li {
+                    margin-right: 2rem;
+                }
+            }
+        }
+
+        .calendar-legend__cat {
+            display: flex;
+            align-items: center;
+            margin: 0.5em 0;
+
+            &:hover {
+                text-decoration: underline;
+            }
+
+            span {
+                display: flex;
+                font-weight: 500;
+                font-size: 0.9em;
+                line-height: 1;
+                margin-top: 0.33em;
+            }
+        }
+
+        .calendar-single-event__cat {
+            position: relative;
+
+            &:hover {
+                + li {
+                    transform: translate3d(0, 0, 0) scale(1);
+                }
+
+                .calendar-single-event__cat-color-dot {
+                    margin-left: -5px;
+                    transform: scale(1.2);
+                    z-index: 1;
+                }
+
+                .calendar-single-event__tooltip {
+                    opacity: 1;
+                }
+            }
+        }
+
+        .calendar-legend__cat-color-dot,
+        .calendar-single-event__cat-color-dot {
+            background-color: gainsboro;
+            width: 15px;
+            height: 15px;
+            display: inline-block;
+            border-radius: 50%;
+            margin-right: 0.33em;
+        }
+
+        .calendar-single-event__cats {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .calendar-single-event__cat-color-dot {
+            position: relative;
+            width: 22px;
+            height: 22px;
+            border: 2px solid #fff;
+            margin: 0;
+            margin-left: -5px;
+            transform: scale(1);
+            z-index: 0;
+            transition: transform 0.35s, margin 0.35s;
+        }
+
+        .calendar-single-event__cat:first-child {
+            .calendar-single-event__cat-color-dot {
+                margin-left: 0;
+            }
+        }
+
+        .calendar-single-event__tooltip {
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            width: auto;
+            transform: translate3d(-50%, 0, 0);
+            font-size: 0.7em;
+            font-weight: 500;
+            opacity: 0;
+            white-space: nowrap;
+            background-color: #fff;
+            padding: 4px;
+            box-shadow: 0 0 10px 0 #eaeaead4;
+            line-height: 1;
+            pointer-events: none;
+            transition: opacity 0.25s;
+            z-index: 10;
+        }
+
+        .tribe-events-calendar-day__event-title {
+            font-size: 1.2rem;
+            margin-bottom: 3px;
+        }
+    }
+
+    .tribe-events-calendar-month__day-cell--mobile {
+        border: 1px solid #e6e6e6;
+        background-color: transparent;
+
+        &.tribe-events-calendar-month__day-cell--selected {
+            border: 1px solid var(--e-global-color-primary);
+
+            .tribe-events-calendar-month__day-date {
+                span,
+                .tribe-events-calendar-month__day-date-daynum,
+                a {
+                    color: #fff;
+                 }
+            }
+        }
+    }
+
+    .tribe-events-calendar-month__day {
+        border-radius: 0;
+    }
+
+    .tribe-events-c-events-bar__search-button {
+        margin-bottom: 1rem;
+        margin-right: 0;
+        background-color: transparent;
+    }
+
+    .tribe-events-c-search__button {
+        @media (min-width: $desk-up) {
+            margin-right: 1rem;
+        }
+    }
+
+    .tribe-events-c-events-bar__views {
+        display: none;
+    }
+
+    .event-calendar-disclaimer {
+        text-align: center;
+        margin: 5px;
+
+        @media (min-width: $desk-up) {
+            display: none;
+        }
+    }
+}
