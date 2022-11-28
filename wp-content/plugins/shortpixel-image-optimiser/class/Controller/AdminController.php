@@ -44,7 +44,16 @@ class AdminController extends \ShortPixel\Controller
 					 return $meta;
 				}
 
-        $mediaItem = \wpSPIO()->filesystem()->getImage($id, 'media');
+// todo add check here for mediaitem
+			  $fs = \wpSPIO()->filesystem();
+				$fs->flushImageCache(); // it's possible file just changed by external plugin.
+        $mediaItem = $fs->getImage($id, 'media');
+
+				if ($mediaItem === false)
+				{
+					 Log::addError('Handle Image Upload Hook triggered, by error in image :' . $id );
+					 return $meta;
+				}
 
 				if ($mediaItem->getExtension()  == 'pdf')
 				{
@@ -58,8 +67,18 @@ class AdminController extends \ShortPixel\Controller
 
 				if ($mediaItem->isProcessable())
 				{
+					if ($mediaItem->get('do_png2jpg') === true)
+					{
+						$mediaItem->convertPNG();
+						$fs->flushImageCache(); // Flush it to reflect new status.
+						$mediaItem = $fs->getImage($id, 'media');
+						$meta = wp_get_attachment_metadata($id); // reset the metadata because we are on the hook.
+					}
         	$control = new OptimizeController();
         	$control->addItemToQueue($mediaItem);
+				}
+				else {
+					Log::addWarn('Passed mediaItem is not processable', $mediaItem);
 				}
         return $meta; // It's a filter, otherwise no thumbs
     }
@@ -75,6 +94,7 @@ class AdminController extends \ShortPixel\Controller
 					'wait' => 3, // amount of time to wait for next round. Prevents high loads
 					'run_once' => false, //  If true queue must be run at least every few minutes. If false, it tries to complete all.
 					'queues' => array('media','custom'),
+					'bulk' => false,
 				);
 
 				if (wp_doing_cron())
@@ -85,6 +105,10 @@ class AdminController extends \ShortPixel\Controller
 				$args = wp_parse_args($args, $defaults);
 
 			  $control = new OptimizeController();
+				if ($args['bulk'] === true)
+				{
+					 $control->setBulk(true);
+				}
 
 			 	if ($args['run_once'] === true)
 				{
@@ -101,12 +125,15 @@ class AdminController extends \ShortPixel\Controller
 
 								foreach($args['queues'] as $qname)
 								{
-									  $result = $results->$qname;
-										// If Queue is not completely empty, there should be something to do.
-										if ($result->qstatus != QUEUE::RESULT_QUEUE_EMPTY)
+									  if (property_exists($results, $qname))
 										{
-											 $running = true;
-											 continue;
+											  $result = $results->$qname;
+												// If Queue is not completely empty, there should be something to do.
+												if ($result->qstatus != QUEUE::RESULT_QUEUE_EMPTY)
+												{
+													 $running = true;
+													 continue;
+												}
 										}
 								}
 
@@ -212,6 +239,7 @@ class AdminController extends \ShortPixel\Controller
         try
         {
           $imageObj = $fs->getImage($post_id, 'media');
+					Log::addDebug('OnDelete ImageObj', $imageObj);
           if ($imageObj !== false)
             $result = $imageObj->onDelete();
         }
@@ -240,7 +268,7 @@ class AdminController extends \ShortPixel\Controller
         $extraClasses = " shortpixel-hide";
         /*translators: toolbar icon tooltip*/
         $id = 'short-pixel-notice-toolbar';
-        $tooltip = __('ShortPixel optimizing...','shortpixel-image-optimiser') . " " . __('Please do not close this admin page.','shortpixel-image-optimiser');
+        $tooltip = __('ShortPixel optimizing...','shortpixel-image-optimiser');
         $icon = "shortpixel.png";
         $successLink = $link = admin_url(current_user_can( 'edit_others_posts')? 'upload.php?page=wp-short-pixel-bulk' : 'upload.php');
         $blank = "";

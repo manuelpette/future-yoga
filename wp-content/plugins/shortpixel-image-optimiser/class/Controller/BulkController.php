@@ -36,7 +36,18 @@ class BulkController
       $optimizeController = new OptimizeController();
       $optimizeController->setBulk(true);
 
+			$fs = \wpSPIO()->filesystem();
+			$backupDir = $fs->getDirectory(SHORTPIXEL_BACKUP_FOLDER);
+			$current_log = $fs->getFile($backupDir->getPath() . 'current_bulk_' . $type . '.log');
+
+			// When starting new bulk remove any open 'current logs';
+			if ($current_log->exists() && $current_log->is_writable())
+			{
+				 $current_log->delete();
+			}
+
       $Q = $optimizeController->getQueue($type);
+
 
       $Q->createNewBulk(array());
 
@@ -52,6 +63,7 @@ class BulkController
         if ($customOp == 'migrate' || $customOp == 'removeLegacy')
         {
            $options['numitems'] = 200;
+
         }
         $Q->setCustomBulk($customOp, $options);
       }
@@ -104,7 +116,7 @@ class BulkController
 	       $q->startBulk();
 			 }
 
-       return $optimizeControl->processQueue(array($types));
+       return $optimizeControl->processQueue($types);
    }
 
    public function finishBulk($type = 'media')
@@ -178,7 +190,7 @@ class BulkController
 				$webpcount = $q->getCustomDataItem('webpcount');
 				$avifcount = $q->getCustomDataItem('avifcount');
 				$basecount = $q->getCustomDataItem('basecount');
-			
+
 				if (property_exists($stats, 'images'))
 					$data['total_images'] = $stats->images->images_done;
 
@@ -228,6 +240,7 @@ class BulkController
           delete_option(self::$logName);
    }
 
+	 // Removes Bulk Log . 
    public static function uninstallPlugin()
    {
       delete_option(self::$logName);

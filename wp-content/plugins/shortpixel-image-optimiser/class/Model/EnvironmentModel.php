@@ -30,6 +30,7 @@ class EnvironmentModel extends \ShortPixel\Model
     private $screen_is_set = false;
     public $is_screen_to_use = false; // where shortpixel optimizer loads
     public $is_our_screen = false; // where shortpixel hooks in more complicated functions.
+		public $is_gutenberg_editor = false;
     public $is_bulk_page = false; // ShortPixel bulk screen.
     public $screen_id = false;
 
@@ -67,7 +68,7 @@ class EnvironmentModel extends \ShortPixel\Model
   {
     if (count($this->disabled_functions) == 0)
     {
-      $disabled = ini_get('disable_functions');			
+      $disabled = ini_get('disable_functions');
       $this->disabled_functions = explode(',', $disabled);
     }
 
@@ -93,8 +94,11 @@ class EnvironmentModel extends \ShortPixel\Model
 				case 'spai':
 					$plugin = 'shortpixel-adaptive-images/short-pixel-ai.php';
 				break;
+				case 's3-offload':
+				  $plugin = 'amazon-s3-and-cloudfront/wordpress-s3.php';
+				break;
 				default:
-					 $plugin = 'none';
+				 	$plugin = 'none';
 				break;
 		 }
 
@@ -126,8 +130,8 @@ class EnvironmentModel extends \ShortPixel\Model
 
   private function setServer()
   {
-    $this->is_nginx = strpos(strtolower($_SERVER["SERVER_SOFTWARE"]), 'nginx') !== false ? true : false;
-    $this->is_apache = strpos(strtolower($_SERVER["SERVER_SOFTWARE"]), 'apache') !== false ? true : false;
+    $this->is_nginx = ! empty($_SERVER["SERVER_SOFTWARE"]) && strpos(strtolower(wp_unslash($_SERVER["SERVER_SOFTWARE"])), 'nginx') !== false ? true : false;
+    $this->is_apache = ! empty($_SERVER["SERVER_SOFTWARE"]) && strpos(strtolower(wp_unslash($_SERVER["SERVER_SOFTWARE"])), 'apache') !== false ? true : false;
     $this->is_gd_installed = function_exists('imagecreatefrompng') && function_exists('imagejpeg');
     $this->is_curl_installed = function_exists('curl_init');
   }
@@ -180,7 +184,7 @@ class EnvironmentModel extends \ShortPixel\Model
     $use_screens = apply_filters('shortpixel/init/optimize_on_screens', $use_screens);
 
     $this->screen_id = $screen->id;
-    if(in_array($screen->id, $use_screens)) {
+    if(is_array($use_screens) && in_array($screen->id, $use_screens)) {
           $this->is_screen_to_use = true;
     }
 
@@ -206,6 +210,10 @@ class EnvironmentModel extends \ShortPixel\Model
        if ($screen->id == 'media_page_wp-short-pixel-bulk')
         $this->is_bulk_page = true;
     }
+		elseif (is_object($screen) && method_exists( $screen, 'is_block_editor' ) && $screen->is_block_editor() ) {
+			  $this->is_screen_to_use = true;
+				$this->is_gutenberg_editor = true;
+	  }
 
     $this->screen_is_set = true;
   }
@@ -215,8 +223,6 @@ class EnvironmentModel extends \ShortPixel\Model
     $ng = \ShortPixel\NextGenController::getInstance();
     $this->has_nextgen = $ng->has_nextgen();
   }
-
-
 
   //set default move as "list". only set once, it won't try to set the default mode again.
   public function setDefaultViewModeList()

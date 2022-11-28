@@ -2,6 +2,9 @@
 namespace ShortPixel;
 use ShortPixel\ShortpixelLogger\ShortPixelLogger as Log;
 
+use ShortPixel\Model\AccessModel as AccessModel;
+
+
 class ViewController extends Controller
 {
   protected static $controllers = array();
@@ -45,15 +48,17 @@ class ViewController extends Controller
   */
   protected function checkPost()
   {
-    if (count($_POST) == 0) // no post, nothing to check, return silent.
-      return true;
 
-    if (! isset($_POST['sp-nonce']) || ! wp_verify_nonce( $_POST['sp-nonce'], $this->form_action))
+    if (! isset($_POST['sp-nonce']) || ! wp_verify_nonce( sanitize_key($_POST['sp-nonce']), $this->form_action))
     {
       Log::addInfo('Check Post fails nonce check, action : ' . $this->form_action, array($_POST) );
       return false;
     }
-    else if (isset($_POST) && count($_POST) > 0)
+		elseif(count($_POST) == 0) // no post, nothing to check, return silent.
+		{
+			return true;
+		}
+    elseif (isset($_POST) && count($_POST) > 0)
     {
       check_admin_referer( $this->form_action, 'sp-nonce' ); // extra check, when we are wrong here, it dies.
       unset($_POST['sp-nonce']);
@@ -65,6 +70,10 @@ class ViewController extends Controller
 		return true;
 	}
 
+	public function access()
+	{
+		 return AccessModel::getInstance();
+	}
 
   /** Loads a view
   *
@@ -74,7 +83,6 @@ class ViewController extends Controller
   {
       // load either param or class template.
       $template = (is_null($template)) ? $this->template : $template;
-
 
       if (is_null($template) )
       {
@@ -89,11 +97,11 @@ class ViewController extends Controller
       $view = $this->view;
       $controller = $this;
 
-      $template_path = \ShortPixelTools::getPluginPath() . 'class/view/' . $template  . '.php';
+      $template_path = \wpSPIO()->plugin_path('class/view/' . $template  . '.php');
      	if (file_exists($template_path) === false)
 			{
         Log::addError("View $template could not be found in " . $template_path,
-        array('class' => get_class($this), 'req' => $_REQUEST));
+        array('class' => get_class($this)));
       }
       elseif ($unique === false || ! in_array($template, self::$viewsLoaded))
       {

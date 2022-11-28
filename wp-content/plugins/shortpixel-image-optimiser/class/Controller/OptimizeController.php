@@ -126,6 +126,13 @@ class OptimizeController
           $json->result->is_done = true;
           $json->result->fileStatus = ImageModel::FILE_STATUS_ERROR;
         }
+				elseif($queue->isDuplicateActive($mediaItem))
+				{
+					$json->result->fileStatus = ImageModel::FILE_STATUS_UNPROCESSED;
+					$json->result->is_error = false;
+					$json->result->is_done = true;
+					$json->result->message = __('A duplicate of this item is already active in queue. ', 'shortpixel-image-optimiser');
+				}
         else
         {
           $result = $queue->addSingleItem($mediaItem); // 1 if ok, 0 if not found, false is not processable
@@ -150,21 +157,23 @@ class OptimizeController
         return $json;
     }
 
-		/** Check if item is in queue.
+		/** Check if item is in queue. || Only checks the single queue!
 		* @param Object $mediaItem
 		*/
 		public function isItemInQueue($mediaItem)
 		{
+				if (! is_null($mediaItem->is_in_queue))
+					return $mediaItem->is_in_queue;
+
 				$type = $mediaItem->get('type');
+
 			  $q = $this->getQueue($type);
 
-				$result = $q->getShortQ()->getItem($mediaItem->get('id'));
+				$bool = $q->isItemInQueue($mediaItem->get('id'));
 
-				if (is_object($result))
-					 return true;
-				else
-					 return false;
-
+			  // Preventing double queries here
+				$mediaItem->is_in_queue = $bool;
+				return $bool;
 		}
 
 		/** Restores an item
@@ -179,6 +188,8 @@ class OptimizeController
         $json->status = 0;
         $json->result = new \stdClass;
 
+				$item_id = $mediaItem->get('id');
+
         if (! is_object($mediaItem))  // something wrong
         {
 
@@ -189,12 +200,20 @@ class OptimizeController
 					$json->result->is_done = true;
 					$json->result->is_error = true;
 
-					ResponseController::addData($item->item_id, 'message', $item->result->message);
+					ResponseController::addData($item_id, 'is_error', true);
+					ResponseController::addData($item_id, 'is_done', true);
+					ResponseController::addData($item_id, 'message', $item->result->message);
 
-          Log::addWarn('Item with id ' . $json->result->item_id . ' is not restorable,');
+          Log::addWarn('Item with id ' . $item_id . ' is not restorable,');
 
            return $json;
         }
+
+				$data = array(
+					'item_type' => $mediaItem->get('type'),
+					'fileName' => $mediaItem->getFileName(),
+				);
+				ResponseController::addData($item_id, $data);
 
         $item_id = $mediaItem->get('id');
 
@@ -209,7 +228,7 @@ class OptimizeController
 				else
 				{
 					 $result = false;
-					 $json->result->message = $mediaItem->getReason('restorable');
+					 $json->result->message = ResponseController::formatItem($mediaItem->get('id')); // $mediaItem->getReason('restorable');
 				}
 
 				// Compat for ancient WP
@@ -238,10 +257,8 @@ class OptimizeController
         else
         {
 
-					 if (! property_exists($json->result, 'message'))
-					 {
-					 		$json->result->message = __('Item is not restorable', 'shortpixel-image-optimiser');
-				 	 }
+					 $json->result->message = ResponseController::formatItem($mediaItem->get('id'));
+
            $json->result->is_done = true;
            $json->fileStatus = ImageModel::FILE_STATUS_ERROR;
            $json->result->is_error = true;
@@ -262,8 +279,11 @@ class OptimizeController
 
       if ($json->status == 1) // successfull restore.
       {
+					$fs = \wpSPIO()->filesystem();
+					$fs->flushImageCache();
+
           // Hard reload since metadata probably removed / changed but still loaded, which might enqueue wrong files.
-            $mediaItem = \wpSPIO()->filesystem()->getImage($mediaItem->get('id'), $mediaItem->get('type'));
+            $mediaItem = $fs->getImage($mediaItem->get('id'), $mediaItem->get('type'));
 
             $mediaItem->setMeta('compressionType', $compressionType);
             $json = $this->addItemToQueue($mediaItem);
@@ -277,7 +297,6 @@ class OptimizeController
     /** Returns the state of the queue so the startup JS can decide if something is going on and what.  **/
     public function getStartupData()
     {
-
         $mediaQ = $this->getQueue('media');
         $customQ = $this->getQueue('custom');
 
@@ -289,12 +308,10 @@ class OptimizeController
         $data->media->stats = $mediaQ->getStats();
         $data->custom->stats = $customQ->getStats();
 
-
         $data->total = $this->calculateStatsTotals($data);
 				$data = $this->numberFormatStats($data);
 
         return $data;
-
     }
 
 
@@ -309,8 +326,8 @@ class OptimizeController
     */
     public function processQueue($queueTypes = array())
     {
-
         $keyControl = ApiKeyController::getInstance();
+
         if ($keyControl->keyIsVerified() === false)
         {
            $json = $this->getJsonResponse();
@@ -324,17 +341,32 @@ class OptimizeController
         $quotaControl = QuotaController::getInstance();
         if ($quotaControl->hasQuota() === false)
         {
-          $json = $this->getJsonResponse();
-          $json->error = AjaxController::NOQUOTA;
-          $json->status = false;
-          $json->message =   __('Quota Exceeded','shortpixel-image-optimiser');
-          return $json;
+					// If we are doing something special (restore, migrate etc), it should runs without credits, so we shouldn't be using any.
+					$isCustomOperation = false;
+					foreach($queueTypes as $qType)
+					{
+						$queue = $this->getQueue($qType);
+						if ($queue && true === $queue->isCustomOperation())
+						{
+								$isCustomOperation = true;
+								break;
+						}
+					}
+
+					// Break out of quota if we are on normal operations.
+					if (false === $isCustomOperation )
+					{
+						$quotaControl->forceCheckRemoteQuota(); // on next load check if something happenend when out and asking.
+	          $json = $this->getJsonResponse();
+	          $json->error = AjaxController::NOQUOTA;
+	          $json->status = false;
+	          $json->message =   __('Quota Exceeded','shortpixel-image-optimiser');
+	          return $json;
+					}
         }
 
         // @todo Here prevent bulk from running when running flag is off
-
         // @todo Here prevent a runTick is the queue is empty and done already ( reliably )
-
         $results = new \stdClass;
         if ( in_array('media', $queueTypes))
         {
@@ -400,7 +432,11 @@ class OptimizeController
 			$qtype = strtolower($qtype);
 
 			$imageObj = $fs->getImage($item->item_id, $qtype);
+			if (is_object($imageObj))
+			{
+				ResponseController::addData($item->item_id, 'fileName', $imageObj->getFileName());
 
+			}
 			// @todo Figure out why this isn't just on action regime as well.
 			if (property_exists($item, 'png2jpg'))
 			{
@@ -420,15 +456,15 @@ class OptimizeController
            switch($item->action)
            {
               case 'restore';
-                 $imageObj->restore();
+//							 Log::addError('Restore tick is off in sendToProcessing!');
+                 $imageObj->restore(array('keep_in_queue' => true));
               break;
               case 'migrate':
-                // Loading the item should already be enough to trigger.
+									$imageObj->migrate(); // hard migrate in bulk, to check if all is there / resync on problems.
               break;
 							case 'png2jpg':
 								$item = $this->convertPNG($item, $q);
 								$item->result->is_done = false;  // if not, finished to newly enqueued
-								// @todo Tell ResponseControllers about those actions
 							break;
 							case 'removeLegacy':
 									 $imageObj->removeLegacyShortPixel();
@@ -467,6 +503,10 @@ class OptimizeController
 
 			// Regardless if it worked or not, requeue the item otherwise it will keep trying to convert due to the flag.
       $imageObj = $fs->getMediaImage($item->item_id);
+
+			// Keep compressiontype from object, set in queue, imageModelToQueue
+			$imageObj->setMeta('compressionType', $item->compressionType);
+
       $this->addItemToQueue($imageObj);
 
       return $item;
@@ -499,7 +539,9 @@ class OptimizeController
       }
       else
 			{
+				// This used in bulk preview for formatting filename.
         $item->result->filename = $imageItem->getFileName();
+				// Used in WP-CLI
 				ResponseController::addData($item->item_id, 'fileName', $imageItem->getFileName());
 			}
 
@@ -539,19 +581,14 @@ class OptimizeController
 					);
 					ResponseController::addData($item->item_id, $response);
 
-
           if ($result->is_done )
           {
              $q->itemFailed($item, true);
              $this->HandleItemError($item, $qtype);
 
 						 ResponseController::addData($item->item_id, 'is_done', true);
-
           }
-          else
-          {
 
-          }
       }
       elseif ($result->is_done)
       {
@@ -565,8 +602,6 @@ class OptimizeController
              $imageItem->setMeta('compressionType', $item->compressionType);
            }
 
-           	Log::addDebug('*** HandleAPIResult: Handle Optimized ** ', array_keys($result->files) );
-
 					 if (count($result->files) > 0 )
            {
 						 	// Dump Stats, Dump Quota. Refresh
@@ -576,12 +611,14 @@ class OptimizeController
               $optimizeResult = $imageItem->handleOptimized($result->files); // returns boolean or null
               $item->result->improvements = $imageItem->getImprovements();
 
+
+
+
               if ($optimizeResult)
               {
                  $item->result->apiStatus = ApiController::STATUS_SUCCESS;
                  $item->fileStatus = ImageModel::FILE_STATUS_SUCCESS;
 
-               //  $item->result->message = sprintf(__('Image %s optimized', 'shortpixel-image-optimiser'), $imageItem->getFileName());
                  do_action('shortpixel_image_optimised', $imageItem->get('id'));
 								 do_action('shortpixel/image/optimised', $imageItem);
                }
@@ -619,9 +656,6 @@ class OptimizeController
 								$item->result->optimized = $fs->pathToUrl($showItem);
 							}
 
-
-
-
            }
            // This was not a request process, just handle it and mark it as done.
            elseif ($result->apiStatus == ApiController::STATUS_NOT_API)
@@ -651,13 +685,10 @@ class OptimizeController
          {
            if ($imageItem->isProcessable() && $result->apiStatus !== ApiController::STATUS_NOT_API)
            {
-              Log::addDebug('Item with ID' . $imageItem->item_id . ' still has processables (with dump)');
+              Log::addDebug('Item with ID' . $imageItem->item_id . ' still has processables (with dump)', $imageItem->getOptimizeUrls());
  						  $api = $this->getAPI();
 							$newItem = new \stdClass;
 							$newItem->urls = $imageItem->getOptimizeUrls();
-
-							//$webps = ($imageItem->isProcessableFileType('webp')) ? $imageItem->getOptimizeFileType('webp') : array();
-							//$avifs = ($imageItem->isProcessableFileType('avigetQueueNamef')) ? $imageItem->getOptimizeFileType('avif') : array();
 
 							// Add to URLs also the possiblity of images with only webp / avif needs. Otherwise URLs would end up emtpy.
 							//$newItem->urls = array_merge($newItem->urls, $webps, $avifs);
@@ -713,6 +744,13 @@ class OptimizeController
             //  $q->itemFailed($item, false); // register as failed, retry in x time, q checks timeouts
           }
       }
+
+			// Not relevant for further returning.
+			if (property_exists($item, 'paramlist'))
+				 unset($item->paramlist);
+
+			if (property_exists($item, 'returndatalist'))
+				 unset($item->returndatalist);
 
 			// Cleaning up the debugger.
 			$debugItem = clone $item;
@@ -940,7 +978,16 @@ class OptimizeController
             {
 							 if ($key == 'percentage_done')
 							 {
-								 	$object->stats->$key = (($object->stats->$key + $value) / 2); //exceptionnes.
+								  if (property_exists($results->custom->stats, 'total') && $results->custom->stats->total == 0)
+										 $perc = $value;
+								  elseif(property_exists($results->media->stats, 'total') && $results->media->stats->total == 0)
+									{
+										 $perc = $object->stats->$key;
+									}
+									else
+								 		$perc = round(($object->stats->$key + $value) / 2); //exceptionnes.
+
+									$object->stats->$key  = $perc;
 							 }
                elseif (is_numeric($object->stats->$key)) // add only if number.
                {

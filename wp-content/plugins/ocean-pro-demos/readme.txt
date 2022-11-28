@@ -1,14 +1,14 @@
 === Ocean Pro Demos ===
 Contributors: oceanwp, freemius, apprimit
 Requires at least: 5.6
-Tested up to: 6.0.0
-Stable tag: 1.3.1
+Tested up to: 6.1
+Stable tag: 1.4.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
 == Description ==
 
-Import the OceanWP pro demos, widgets and customizer settings with one click.
+A premium plugin with powerful and complete options for web designers: import OceanWP Full website templates with all pages and styling; Elementor Sections Library templates; and import images and icons from Freepik.
 This plugin requires the [OceanWP](https://oceanwp.org/) theme to be installed.
 
 == Installation ==
@@ -24,6 +24,12 @@ This plugin requires the [OceanWP](https://oceanwp.org/) theme to be installed.
 This plugin will only work with the [OceanWP](https://oceanwp.org/) theme.
 
 == Changelog ==
+
+= 1.4.1 - NOV 9 2022 =
+- NEW: Additional server for Images and Icon import for troubleshooting purposes.
+
+= 1.4.0 =
+- NEW: Elementor sections librart.
 
 = 1.3.1 =
 - Added: Import button for improved UX.

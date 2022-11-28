@@ -30,6 +30,7 @@ class StatsModel
 
   protected $refreshStatTime;
 
+
   // Commented out stats were dropped.
   // Note: the difference in items / images including thumbs and the counts don't . This is due to technical difference in acquiring the data.
     protected $defaults = array(
@@ -38,6 +39,7 @@ class StatsModel
                        'thumbs' => -1, // Optimized thumbs - SQL does thumbs, but queue doesn't. (imprecise query)
                        'itemsTotal' => -1, // Total items in media  ( sql )
                        'thumbsTotal' => -1, // Total thumbs in media ( sql ) - imprecise query
+											 'isLimited' => false,
                   /*     'lossy' => 0, // processed x compression
                        'lossy_thumbs' => 0, // main / thumbs
                        'lossless' => 0, // main /thumbs
@@ -66,6 +68,7 @@ class StatsModel
                        'itemsTotal' => -1,
                        'thumbsTotal' => -1,
                      ),
+
     /*  'total' => array('items' => 0,  // total items found
                        'images' => 0, // total images found
       ), */
@@ -115,7 +118,9 @@ class StatsModel
   public function reset()
   {
       $this->stats = $this->defaults;
-      $this->save();
+			\wpSPIO()->settings()->deleteOption('currentStats');
+
+  //    $this->save();
   }
 
   // @todo This is not functional
@@ -215,11 +220,18 @@ class StatsModel
             case 'thumbsTotal':
                $data = $this->countMediaThumbnails();
             break;
+						case 'isLimited':
+								$data = $this->stats['media']['isLimited'];
+						break;
           }
 
           if ($data >= 0)
           {
-             $this->stats['media'][$path[1]] = $data;
+						 if (is_numeric($data))
+						 {
+							  $data = max($data, 0);
+						 }
+             $this->stats['media'][$path[1]] = $data; // never allow any data below zero.
              $this->save();
           }
       }
@@ -291,6 +303,7 @@ class StatsModel
 
      $defaults = array(
        'optimizedOnly' => false,
+			 'limit' => 50000,
      );
 
      $args = wp_parse_args($args,$defaults);
@@ -303,10 +316,13 @@ class StatsModel
      }
 		 else {
 			 // This query will return 2 positions after the thumbnail array declaration.  Value can be up to two positions ( 0-100 thumbnails) . If positions is 1-10 intval will filter out the string part.
-	     $sql = "SELECT meta_id, post_id, substr(meta_value, instr(meta_value,'sizes')+9,2) as thumbcount, LOCATE('original_image', meta_value) as originalImage FROM " . $wpdb->postmeta . " WHERE meta_key = '_wp_attachment_metadata' ";
+	     $sql = "SELECT  meta_id, post_id, substr(meta_value, instr(meta_value,'sizes')+9,2) as thumbcount, LOCATE('original_image', meta_value) as originalImage FROM " . $wpdb->postmeta . " WHERE meta_key = '_wp_attachment_metadata' ";
 
 	     $sql .= " AND post_id NOT IN ( SELECT post_id FROM " . $wpdb->postmeta . " where meta_key = '_shortpixel_prevent_optimize' )";  // exclude 'crashed items'
+
+			 $sql .= " limit 0," . $args['limit'];
 		 }
+
 
 		 if (count($prepare) > 0)
 		 {
@@ -314,6 +330,13 @@ class StatsModel
 		 }
 
      $results = $wpdb->get_results($sql);
+
+		 //og::addDebug('Limit and count results' . $args['limit'] . ' ' . count($results));
+		 if ($args['limit'] <= count($results))
+		 {
+			 	$this->stats['media']['isLimited']= true;
+		 }
+
      $thumbCount = 0;
 
      foreach($results as $row)
@@ -371,17 +394,28 @@ class StatsModel
      //$monthsAgo = 0 - $monthsAgo; // minus it for the sub.
      /*$sql = "select meta_id from wp_postmeta where meta_key = '_shortpixel_meta' HAVING substr(meta_value, instr(meta_value, 'tsOptimized')+15,10) as stamp >= %d and stamp <= %d"; */
 
-     $sql = 'SELECT count(post_id) FROM '  . $wpdb->postmeta . ' WHERE meta_key = "_shortpixel_optdate" and meta_value >= %d and meta_value <= %d';
-
-     $date = new \DateTime();
+		 $date = new \DateTime();
      $date->sub( new \DateInterval('P' . $monthsAgo . 'M'));
 
      $dateUntil = new \DateTime();
      $dateUntil->sub( new \DateInterval('P' . ($monthsAgo-1). 'M'));
 
-     $sql = $wpdb->prepare($sql, $date->getTimeStamp(), $dateUntil->getTimeStamp() );
+     $sql = 'SELECT count(id) FROM '  . $wpdb->prefix . 'shortpixel_postmeta WHERE tsOptimized >= %s and tsOptimized <= %s';
+     $sql = $wpdb->prepare($sql, $date->format('Y-m-d H:i:s'), $dateUntil->format('Y-m-d H:i:s') );
+     $count_media = $wpdb->get_var($sql);
 
-     $count = $wpdb->get_var($sql);
+		 // Custom
+		 $sql = 'SELECT count(id) FROM '  . $wpdb->prefix . 'shortpixel_meta WHERE ts_optimized >= %s and ts_optimized <= %s';
+		 $sql = $wpdb->prepare($sql, $date->format('Y-m-d H:i:s'), $dateUntil->format('Y-m-d H:i:s') );
+		 $count_custom = $wpdb->get_var($sql);
+
+		 $count = 0;
+		 if (! is_null($count_media) && is_numeric($count_media))
+		 	$count += $count_media;
+
+			if (! is_null($count_custom) && is_numeric($count_custom))
+ 		 	$count += $count_custom;
+
 
      return $count;
   }
@@ -424,11 +458,6 @@ class StatsModel
         return $count;
 
   }
-
-  //public function from
-
-
-
 
 
 } // class

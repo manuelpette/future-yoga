@@ -3,13 +3,13 @@ namespace ShortPixel\Controller;
 use ShortPixel\ShortPixelLogger\ShortPixelLogger as Log;
 use ShortPixel\Notices\NoticeController as Notice;
 use ShortPixel\Helper\UiHelper as UiHelper;
+use ShortPixel\Helper\UtilHelper as UtilHelper;
 use ShortPixel\Helper\InstallHelper as InstallHelper;
 
 use ShortPixel\Model\ApiKeyModel as ApiKeyModel;
-
+use ShortPixel\Model\AccessModel as AccessModel;
 
 use ShortPixel\NextGenController as NextGenController;
-
 
 class SettingsController extends \ShortPixel\ViewController
 {
@@ -24,7 +24,6 @@ class SettingsController extends \ShortPixel\ViewController
      protected $hide_api_key;
      protected $has_nextgen;
      protected $do_redirect = false;
-     protected $postkey_needs_validation = false;
 
      protected $quotaData = null;
 
@@ -42,9 +41,12 @@ class SettingsController extends \ShortPixel\ViewController
       public function __construct()
       {
           $this->model = \wpSPIO()->settings();
-          $this->keyModel = new ApiKeyModel();
 
-          $this->keyModel->loadKey();
+					//@todo Streamline this mess. Should run through controller mostly. Risk of desync otherwise.
+					$keyControl = ApiKeyController::getInstance();
+          $this->keyModel = $keyControl->getKeyModel(); //new ApiKeyModel();
+
+         // $this->keyModel->loadKey();
           $this->is_verifiedkey = $this->keyModel->is_verified();
           $this->is_constant_key = $this->keyModel->is_constant();
           $this->hide_api_key = $this->keyModel->is_hidden();
@@ -52,7 +54,6 @@ class SettingsController extends \ShortPixel\ViewController
 
           parent::__construct();
       }
-
 
       // default action of controller
       public function load()
@@ -70,6 +71,7 @@ class SettingsController extends \ShortPixel\ViewController
 
         $this->load_settings();
       }
+
 
       // this is the nokey form, submitting api key
       public function action_addkey()
@@ -114,6 +116,22 @@ class SettingsController extends \ShortPixel\ViewController
 	            $this->load(); // already verified?
 							return;
 	        }
+
+					$bodyArgs = array(
+							'plugin_version' => SHORTPIXEL_IMAGE_OPTIMISER_VERSION,
+							'email' => $email,
+							'ip' => isset($_SERVER["HTTP_X_FORWARDED_FOR"]) ? sanitize_text_field($_SERVER["HTTP_X_FORWARDED_FOR"]) : sanitize_text_field($_SERVER['REMOTE_ADDR']),
+					);
+
+					$affl_id = false;
+					$affl_id = (defined('SHORTPIXEL_AFFILIATE_ID')) ? SHORTPIXEL_AFFILIATE_ID : false;
+					$affl_id = apply_filters('shortpixel/settings/affiliate', $affl_id); // /af/bla35
+
+					if ($affl_id !== false)
+					{
+						 $bodyArgs['affiliate'] = $affl_id;
+ 					}
+
 	        $params = array(
 	            'method' => 'POST',
 	            'timeout' => 10,
@@ -122,11 +140,7 @@ class SettingsController extends \ShortPixel\ViewController
 	            'blocking' => true,
 	            'sslverify' => false,
 	            'headers' => array(),
-	            'body' => array(
-	                'plugin_version' => SHORTPIXEL_IMAGE_OPTIMISER_VERSION,
-	                'email' => $email,
-	                'ip' => isset($_SERVER["HTTP_X_FORWARDED_FOR"]) ? sanitize_text_field($_SERVER["HTTP_X_FORWARDED_FOR"]) : sanitize_text_field($_SERVER['REMOTE_ADDR']),
-	            )
+	            'body' => $bodyArgs,
 	        );
 
 	        $newKeyResponse = wp_remote_post("https://shortpixel.com/free-sign-up-plugin", $params);
@@ -136,10 +150,12 @@ class SettingsController extends \ShortPixel\ViewController
 	        if ( is_object($newKeyResponse) && get_class($newKeyResponse) == 'WP_Error' ) {
 	            //die(json_encode((object)array('Status' => 'fail', 'Details' => '503')));
 							Notice::addError($errorText . $newKeyResponse->get_error_message() );
+							$this->doRedirect(); // directly redirect because other data / array is not set.
 	        }
 	        elseif ( isset($newKeyResponse['response']['code']) && $newKeyResponse['response']['code'] <> 200 ) {
 	            //die(json_encode((object)array('Status' => 'fail', 'Details' =>
 							Notice::addError($errorText . $newKeyResponse['response']['code']);
+							$this->doRedirect(); // strange http status, redirect with error.
 	        }
 					$body = $newKeyResponse['body'];
         	$body = json_decode($body);
@@ -160,7 +176,7 @@ class SettingsController extends \ShortPixel\ViewController
 					}
 					else
 					{
-						 Notice::addError( __('Unexpected error obtain your ShortPixel key. Please contact support about this', 'shortpixel-image-optimiser') . '  ' . json_encode($body) );
+						 Notice::addError( __('Unexpected error obtaining the ShortPixel key. Please contact support about this:', 'shortpixel-image-optimiser') . '  ' . json_encode($body) );
 					}
 
 					$this->doRedirect();
@@ -194,14 +210,8 @@ class SettingsController extends \ShortPixel\ViewController
 
 			public function action_debug_redirectBulk()
 			{
-				$opt = new OptimizeController();
-	 			$opt->setBulk(true);
 
-	 		 	$bulkMedia = $opt->getQueue('media');
-	 			$bulkCustom = $opt->getQueue('custom');
-
-				$bulkMedia->resetQueue();
-				$bulkCustom->resetQueue();
+	 			OptimizeController::resetQueues();
 
 				$action = isset($_REQUEST['bulk']) ? sanitize_text_field($_REQUEST['bulk']) : null;
 
@@ -255,6 +265,34 @@ class SettingsController extends \ShortPixel\ViewController
           $this->load();
       }
 
+			public function action_debug_triggerNotice()
+			{
+				$key = isset($_REQUEST['notice_constant']) ? sanitize_text_field($_REQUEST['notice_constant']) : false;
+
+				if ($key !== false)
+				{
+					$adminNoticesController = AdminNoticesController::getInstance();
+
+					if ($key == 'trigger-all')
+					{
+						$notices = $adminNoticesController->getAllNotices();
+						foreach($notices as $noticeObj)
+						{
+							 $noticeObj->addManual();
+						}
+					}
+					else
+					{
+						$model = $adminNoticesController->getNoticeByKey($key);
+						if ($model)
+							$model->addManual();
+					}
+				}
+				$this->load();
+
+			}
+
+
 			public function action_debug_resetQueue()
 			{
 				 $queue = isset($_REQUEST['queue']) ? sanitize_text_field($_REQUEST['queue']) : null;
@@ -295,6 +333,7 @@ class SettingsController extends \ShortPixel\ViewController
 								 $message = sprintf(__('All items in the %s queue have been removed and the process is stopped', 'shortpixel-image-optimiser'), $queue);
  						 }
 
+
 						 Notice::addSuccess($message);
 			 }
 
@@ -312,9 +351,9 @@ class SettingsController extends \ShortPixel\ViewController
 			}
 
 
+
       public function processSave()
       {
-
           // Split this in the several screens. I.e. settings, advanced, Key Request IF etc.
           if (isset($this->postData['includeNextGen']) && $this->postData['includeNextGen'] == 1)
           {
@@ -352,14 +391,21 @@ class SettingsController extends \ShortPixel\ViewController
             $this->keyModel->checkKey($check_key);
           }
 
-				//	$this->loadQuotaData(true);
+
+					// Every save, force load the quota. One reason, because of the HTTP Auth settings refresh.
+					$this->loadQuotaData(true);
 
           // end
 
           if ($this->do_redirect)
             $this->doRedirect('bulk');
           else {
-						Notice::addSuccess(__('Settings Saved', 'shortpixel-image-optimiser'));
+
+						$noticeController = Notice::getInstance();
+						$notice = Notice::addSuccess(__('Settings Saved', 'shortpixel-image-optimiser'));
+						$notice->is_removable = false;
+						$noticeController->update();
+
             $this->doRedirect();
           }
       }
@@ -378,10 +424,8 @@ class SettingsController extends \ShortPixel\ViewController
 
          $this->view->data->apiKey = $keyController->getKeyForDisplay();
 
-
          $this->loadStatistics();
 				 $this->checkCloudFlare();
-
 
          $statsControl = StatsController::getInstance();
 
@@ -398,7 +442,6 @@ class SettingsController extends \ShortPixel\ViewController
          $this->view->cloudflare_constant = defined('SHORTPIXEL_CFTOKEN') ? true : false;
 
          $settings = \wpSPIO()->settings();
-         $this->view->dismissedNotices = $settings->dismissedNotices;
 
 				 if ($this->view->data->createAvif == 1)
            $this->avifServerCheck();
@@ -406,84 +449,18 @@ class SettingsController extends \ShortPixel\ViewController
          $this->loadView('view-settings');
       }
 
-			  protected function avifServerCheck()
+			 protected function avifServerCheck()
       {
-          $cache = new CacheController();
-          if (apply_filters('shortpixel/avifcheck/override', false) === true)
-          { return; }
+    			$noticeControl = AdminNoticesController::getInstance();
+					$notice = $noticeControl->getNoticeByKey('MSG_AVIF_ERROR');
 
-          if ($cache->getItem('avif_server_check')->exists() === false)
-          {
-             $url = \WPSPIO()->plugin_url('res/img/test.avif');
-             $headers = get_headers($url);
-             $is_error = true;
+					$notice->check();
 
-             // Defaults.
-             $error_message = __('Avif server test failed. Your server might not be configured to display AVIF files properly. Serving Avif might cause your images to not load. Check your images, disable the AVIF option or update your web server configuration.', 'shortpixel-image-optimiser');
-             $error_detail = __('The request did not return valid HTTP Headers. Check if the plugin is allowed to get ' . $url, 'shortpixel-image-optimiser');
-
-             $contentType = null;
-             $response = $headers[0];
-
-             if (is_array($headers) )
-             {
-                foreach($headers as $index => $header)
-                {
-                    if ( strpos(strtolower($header), 'content-type') !== false )
-										{
-											// This is another header that can interrupt.
-											if (strpos(strtolower($header), 'x-content-type-options') === false)
-											{
-                      	$contentType = $header;
-											}
-										}
-                }
-
-                // http not ok, redirect etc. Shouldn't happen.
-                 if (is_null($response) || strpos($response, '200') === false)
-                 {
-                   $error_detail = sprintf(__('The AVIF check could not be completed, because the plugin couldn\'t fetch  %s %s %s. %s Please check the security/firewall settings and try again', 'shortpixel-image-optimiser'), '<a href="' . $url . '">', $url, '</a>', '<br>');
-                 }
-                 elseif(is_null($contentType) || strpos($contentType, 'avif') === false)
-                 {
-                   $error_detail = sprintf(__('The necessary Content-type header for AVIF files wasn\'t found, please check this with your Hosting and/or CDN provider. For more details about how to fix this, %s check this article %s', 'shortpixel_image_optimiser'), '<a href="https://shortpixel.com/blog/avif-mime-type-delivery-apache-nginx/" target="_blank"> ', '</a>');
-
-                 }
-                 else
-                 {
-                    $is_error = false;
-                 }
-             }
-
-             if ($is_error)
-             {
-							   $noticeController = Notice::getInstance();
-					       $notice = $noticeController->getNoticeByID(AdminNoticesController::MSG_AVIF_ERROR);
-								 if ($notice && $notice->isDismissed() === true)
-							 	 {
-									 // Do Nothing
-								 }
-								 else
-								 {
-		                $notice = Notice::addError('<h4>' . $error_message . '</h4><p>' . $error_detail . '</p><p class="small">' . __('Returned Headers for :<br>', 'shortpixel-image-optimiser') . print_r($headers, true) .  '</p>');
-		                Notice::makePersistent($notice, AdminNoticesController::MSG_AVIF_ERROR, MONTH_IN_SECONDS);
-								 }
-
-             }
-             else
-             {
-									 Notice::removeNoticeByID(AdminNoticesController::MSG_AVIF_ERROR);
-
-                   $item = $cache->getItem('avif_server_check');
-                   $item->setValue(time());
-                   $item->setExpires(WEEK_IN_SECONDS);
-                   $cache->storeItemObject($item );
-             }
-          }
       }
 
       protected function loadStatistics()
       {
+				/*
         $statsControl = StatsController::getInstance();
         $stats = new \stdClass;
 
@@ -499,7 +476,7 @@ class SettingsController extends \ShortPixel\ViewController
 
 
         $this->view->stats = $stats;
-
+				*/
       }
 
 			/** @todo Remove this check in Version 5.1 including all data on the old CF token */
@@ -686,14 +663,7 @@ class SettingsController extends \ShortPixel\ViewController
           // must be an array
           $post['excludeSizes'] = (isset($post['excludeSizes']) && is_array($post['excludeSizes']) ? $post['excludeSizes']: array());
 
-          // key check, if validate is set to valid, check the key
-          if (isset($post['validate']))
-          {
-            if ($post['validate'] == 'validate')
-              $this->postkey_needs_validation = true;
 
-            unset($post['validate']);
-          }
 
           // when adding a new custom folder
           if (isset($post['addCustomFolder']) && strlen($post['addCustomFolder']) > 0)
@@ -710,7 +680,6 @@ class SettingsController extends \ShortPixel\ViewController
           unset($post['addCustomFolder']);
 
           if(isset($post['removeFolder']) && intval($post['removeFolder']) > 0) {
-              //$metaDao = $this->shortPixel->getSpMetaDao();
               $folder_id = intval($post['removeFolder']);
               $otherMedia = OtherMediaController::getInstance();
               $dirObj = $otherMedia->getFolderByID($folder_id);
@@ -744,11 +713,6 @@ class SettingsController extends \ShortPixel\ViewController
 
           parent::processPostData($post);
 
-					// Unset front optimization when automedialib. is off
-					if ($this->postData['autoMediaLibrary'] == 0)
-					{
-						 $this->postData['frontBootstrap'] = 0;
-					}
 
       }
 
@@ -759,7 +723,7 @@ class SettingsController extends \ShortPixel\ViewController
       {
         $deliverwebp = 0;
         if (! $this->is_nginx)
-          \ShortPixelTools::alterHtaccess(false, false); // always remove the statements.
+          UtilHelper::alterHtaccess(false, false); // always remove the statements.
 
 			  $webpOn = isset($post['createWebp']) && $post['createWebp'] == 1;
 				$avifOn = isset($post['createAvif']) && $post['createAvif'] == 1;
@@ -790,7 +754,7 @@ class SettingsController extends \ShortPixel\ViewController
 
         if (! $this->is_nginx && $deliverwebp == 3) // deliver webp/avif via htaccess, write rules
         {
-          \ShortPixelTools::alterHtaccess(true, true);
+          UtilHelper::alterHtaccess(true, true);
         }
 
          $post['deliverWebp'] = $deliverwebp;

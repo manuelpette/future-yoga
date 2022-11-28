@@ -3,7 +3,7 @@ namespace ShortPixel;
 use ShortPixel\Notices\NoticeController as NoticeController;
 use Shortpixel\Controller\StatsController as StatsController;
 use Shortpixel\Controller\OptimizeController as OptimizeController;
-
+use ShortPixel\Controller\AdminNoticesController as AdminNoticesController;
 
 $opt = new OptimizeController();
 
@@ -14,14 +14,14 @@ $env = \wpSPIO()->env();
 
 ?>
 
-<section id="tab-debug" <?php echo ($this->display_part == 'debug') ? ' class="sel-tab" ' :''; ?>>
+<section id="tab-debug" class="<?php echo esc_attr(($this->display_part == 'debug') ? ' sel-tab ' :''); ?>">
   <h2><a class='tab-link' href='javascript:void(0);' data-id="tab-debug">
-    <?php _e('Debug','shortpixel-image-optimiser');?></a>
+    <?php esc_html_e('Debug','shortpixel-image-optimiser');?></a>
   </h2>
 
 <div class="wp-shortpixel-options wp-shortpixel-tab-content" style="visibility: hidden">
   <div class='env'>
-    <h3><?php _e('Environment', 'shortpixel'); ?></h3>
+    <h3><?php esc_html_e('Environment', 'shortpixel'); ?></h3>
     <div class='flex'>
       <span>NGINX</span><span><?php var_export($this->is_nginx); ?></span>
       <span>KeyVerified</span><span><?php var_export($this->is_verifiedkey); ?></span>
@@ -37,62 +37,73 @@ $env = \wpSPIO()->env();
 			<span>GD Installed</span><span><?php var_export($env->is_gd_installed); ?></span>
 			<span>Curl Installed</span><span><?php var_export($env->is_curl_installed); ?></span>
 		</div>
+
+		<div class='flex'>
+				<span>Uploads Base</span><span><?php echo esc_html((defined('SHORTPIXEL_UPLOADS_BASE')) ? SHORTPIXEL_UPLOADS_BASE : 'not defined'); ?></span>
+				<span>Uploads Name</span><span><?php echo esc_html((defined('SHORTPIXEL_UPLOADS_NAME')) ? SHORTPIXEL_UPLOADS_NAME : 'not defined'); ?></span>
+				<span>Backup Folder</span><span><?php echo esc_html((defined('SHORTPIXEL_BACKUP_FOLDER')) ? SHORTPIXEL_BACKUP_FOLDER : 'not defined'); ?></span>
+				<span>Backup URL</span><span><?php echo esc_html((defined('SHORTPIXEL_BACKUP_URL')) ? SHORTPIXEL_BACKUP_URL : 'not defined'); ?></span>
+
+
+
+		</div>
   </div>
 
   <div class='settings'>
-    <h3><?php _e('Settings', 'shortpixel'); ?></h3>
+    <h3><?php esc_html_e('Settings', 'shortpixel'); ?></h3>
     <?php $local = $this->view->data;
       $local->apiKey = strlen($local->apiKey) . ' chars'; ?>
     <pre><?php var_export($local); ?></pre>
   </div>
 
   <div class='quotadata'>
-    <h3><?php _e('Quota Data', 'shortpixel'); ?></h3>
+    <h3><?php esc_html_e('Quota Data', 'shortpixel'); ?></h3>
     <pre><?php var_export($this->quotaData); ?></pre>
   </div>
 
 
   <div class='debug-quota'>
-    <form method="POST" action="<?php echo esc_url(add_query_arg(array('sp-action' => 'action_debug_resetquota'))) ?>">
+    <form method="POST" action="<?php echo esc_url(add_query_arg(array('sp-action' => 'action_debug_resetquota'), $this->url)) ?>">
 
       <button class='button' type='submit'>Clear Quota Data</button>
       </form>
   </div>
   <div class="stats env">
-      <h3><?php _e('Stats', 'shortpixel-image-optimiser'); ?></h3>
+      <h3><?php esc_html_e('Stats', 'shortpixel-image-optimiser'); ?></h3>
       <h4>Media</h4>
       <div class='flex'>
         <?php $statsControl = StatsController::getInstance();
         ?>
-        <span>Items</span><span><?php echo $statsControl->find('media', 'items'); ?></span>
-        <span>Thumbs</span><span><?php echo $statsControl->find('media', 'thumbs'); ?></span>
-        <span>Images</span><span><?php echo $statsControl->find('media', 'images'); ?></span>
-        <span>ItemsTotal</span><span><?php echo $statsControl->find('media', 'itemsTotal'); ?></span>
-        <span>ThumbsTotal</span><span><?php echo $statsControl->find('media', 'thumbsTotal'); ?></span>
+        <span>Items</span><span><?php echo esc_html($statsControl->find('media', 'items')); ?></span>
+        <span>Thumbs</span><span><?php echo esc_html($statsControl->find('media', 'thumbs')); ?></span>
+        <span>Images</span><span><?php echo esc_html($statsControl->find('media', 'images')); ?></span>
+        <span>ItemsTotal</span><span><?php echo esc_html($statsControl->find('media', 'itemsTotal')); ?></span>
+        <span>ThumbsTotal</span><span><?php echo esc_html($statsControl->find('media', 'thumbsTotal')); ?></span>
+
      </div>
      <h4>Custom</h4>
      <div class='flex'>
-       <span>Custom Optimized</span><span><?php echo $statsControl->find('custom', 'items'); ?></span>
-       <span>Custom itemsTotal</span><span><?php echo $statsControl->find('custom', 'itemsTotal'); ?>
+       <span>Custom Optimized</span><span><?php echo esc_html($statsControl->find('custom', 'items')); ?></span>
+       <span>Custom itemsTotal</span><span><?php echo esc_html($statsControl->find('custom', 'itemsTotal')); ?>
        </span>
      </div>
      <h4>Total</h4>
      <div class='flex'>
-        <span>Items</span><span><?php echo $statsControl->find('total', 'items'); ?></span>
-        <span>Images</span><span><?php echo $statsControl->find('total', 'images'); ?></span>
-        <span>Thumbs</span><span><?php echo $statsControl->find('total', 'thumbs'); ?></span>
+        <span>Items</span><span><?php echo esc_html($statsControl->find('total', 'items')); ?></span>
+        <span>Images</span><span><?php echo esc_html($statsControl->find('total', 'images')); ?></span>
+        <span>Thumbs</span><span><?php echo esc_html($statsControl->find('total', 'thumbs')); ?></span>
      </div>
      <h4>Period</h4>
      <div class='flex'>
-        <span>Month #1 </span><span><?php echo $statsControl->find('period', 'months', '1'); ?></span>
-        <span>Month #2 </span><span><?php echo $statsControl->find('period', 'months', '2'); ?></span>
-        <span>Month #3 </span><span><?php echo $statsControl->find('period', 'months', '3'); ?></span>
-        <span>Month #4 </span><span><?php echo $statsControl->find('period', 'months', '4'); ?></span>
+        <span>Month #1 </span><span><?php echo esc_html($statsControl->find('period', 'months', '1')); ?></span>
+        <span>Month #2 </span><span><?php echo esc_html($statsControl->find('period', 'months', '2')); ?></span>
+        <span>Month #3 </span><span><?php echo esc_html($statsControl->find('period', 'months', '3')); ?></span>
+        <span>Month #4 </span><span><?php echo esc_html($statsControl->find('period', 'months', '4')); ?></span>
   	</div>
 	</div> <!-- stats -->
 
   <div class='debug-stats'>
-    <form method="POST" action="<?php echo esc_url(add_query_arg(array('sp-action' => 'action_debug_resetStats'))) ?>"
+    <form method="POST" action="<?php echo esc_url(add_query_arg(array('sp-action' => 'action_debug_resetStats'), $this->url)) ?>"
       id="shortpixel-form-debug-stats">
       <button class='button' type='submit'>Clear statistics cache</button>
       </form>
@@ -102,20 +113,29 @@ $env = \wpSPIO()->env();
     $notices = $noticeController->getNotices();
   ?>
 
-  <h3>Notices (<?php echo count($notices); ?>)</h3>
+  <h3>Notices (<?php echo esc_html(count($notices)); ?>)</h3>
   <div class='table notices'>
 
     <div class='head'>
-      <span>ID</span><span>Done</span><span>Dismissed</span><span>Persistent</span>
+      <span>ID</span><span>Done</span><span>Dismissed</span><span>Persistent</span><span>Exclude</span><span>Include</span>
     </div>
 
-  <?php foreach ($notices as $noticeObj): ?>
+  <?php foreach ($notices as $noticeObj):
+			$exclude = $noticeObj->_debug_getvar('exclude_screens');
+			$include = $noticeObj->_debug_getvar('include_screens');
+
+			$exclude = is_array($exclude) ? implode(',', $exclude) : $exclude;
+			$include = is_array($include) ? implode(',', $include) : $include;
+
+	?>
 
   <div>
-      <span><?php echo $noticeObj->getID(); ?></span>
+      <span><?php echo esc_html($noticeObj->getID()); ?></span>
       <span><?php echo ($noticeObj->isDone()) ? 'Y' : 'N'; ?> </span>
       <span><?php echo ($noticeObj->isDismissed()) ? 'Y' : 'N'; ?> </span>
       <span><?php echo ($noticeObj->isPersistent()) ? 'Y' : 'N'; ?> </span>
+			<span><?php echo $exclude ?></span>
+			<span><?php echo $include ?></span>
 
   </div>
 
@@ -124,11 +144,31 @@ $env = \wpSPIO()->env();
   </div>
 
   <div class='debug-notices'>
-    <form method="POST" action="<?php echo esc_url(add_query_arg(array('sp-action' => 'action_debug_resetNotices'))) ?>"
+    <form method="POST" action="<?php echo esc_url(add_query_arg(array('sp-action' => 'action_debug_resetNotices'),$this->url)) ?>"
       id="shortpixel-form-debug-stats">
       <button class='button' type='submit'>Reset Notices</button>
       </form>
   </div>
+
+	<div class='trigger-notices'>
+		<form method="POST" action="<?php echo esc_url(add_query_arg(array('sp-action' => 'action_debug_triggerNotice'), $this->url)) ?>"
+      id="shortpixel-form-debug-stats">
+			<?php
+				$controller = AdminNoticesController::getInstance();
+				$notices = $controller->getAllNotices();
+			//	$refl = new \ReflectionClass('ShortPixel\Controller\AdminNoticesController');
+			//	$constants = $refl->getConstants();
+		 ?>
+				<select name="notice_constant">
+					 <option value="trigger-all">Trigger All</option>
+					<?php foreach($notices as $key => $noticeObj)
+						echo "<option value='$key'>$key </option>";
+						?>
+				</select>
+				<button class="button" type="submit">Trigger this Notice</button>
+
+		</form>
+	</div>
 
   <p>&nbsp;</p>
 
@@ -161,13 +201,13 @@ $env = \wpSPIO()->env();
 			foreach($queues as $name => $queue):
 					$stats = $queue->getStats();
 					echo "<div>";
-						echo "<span>" . $name . '</span>';
-						echo "<span>" .  $stats->in_queue . '</span>';
-						echo "<span>" .  $stats->in_process . '</span>';
-						echo "<span>" .  $stats->errors . '</span>';
-						echo "<span>" .  $stats->fatal_errors . '</span>';
-						echo "<span>" .  $stats->done . '</span>';
-						echo "<span>" .  $stats->total . '</span>';
+						echo "<span>" .  esc_html($name) . '</span>';
+						echo "<span>" .  esc_html($stats->in_queue) . '</span>';
+						echo "<span>" .  esc_html($stats->in_process) . '</span>';
+						echo "<span>" .  esc_html($stats->errors) . '</span>';
+						echo "<span>" .  esc_html($stats->fatal_errors) . '</span>';
+						echo "<span>" .  esc_html($stats->done) . '</span>';
+						echo "<span>" .  esc_html($stats->total) . '</span>';
 
 					echo "</div>";
 				?>
@@ -175,14 +215,14 @@ $env = \wpSPIO()->env();
 			<?php endforeach; ?>
 
   <div class='debug-queue'>
-    <form method="POST" action="<?php echo esc_url(add_query_arg(array('sp-action' => 'action_debug_resetQueue'))) ?>"
+    <form method="POST" action="<?php echo esc_url(add_query_arg(array('sp-action' => 'action_debug_resetQueue'),$this->url)) ?>"
       id="shortpixel-form-reset-queue">
       <button class='button' type='submit'>Reset ShortQ</button>
 			<select name="queue">
 					<option>All</option>
 					<?php foreach($queues as $name => $q)
 					{
-						 echo "<option>$name</option>";
+						 echo "<option>" . esc_attr($name) . "</option>";
 					}
 					?>
 			</select>
@@ -192,7 +232,7 @@ $env = \wpSPIO()->env();
 
 <p></p>
 <div class='debug-key'>
-	<form method="POST" action="<?php echo esc_url(add_query_arg(array('sp-action' => 'action_debug_removeProcessorKey'))) ?>"
+	<form method="POST" action="<?php echo esc_url(add_query_arg(array('sp-action' => 'action_debug_removeProcessorKey'),$this->url)) ?>"
 		id="shortpixel-form-debug-stats">
 		<button class='button' type='submit'>Reset Processor Key</button>
 		</form>

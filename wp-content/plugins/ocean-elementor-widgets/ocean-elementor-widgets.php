@@ -3,13 +3,14 @@
  * Plugin Name:         Ocean Elementor Widgets
  * Plugin URI:          https://oceanwp.org/extension/ocean-elementor-widgets/
  * Description:         Add many new powerful and entirely customizable widgets to the popular free page builder - Elementor.
- * Version:             2.2.2
+ * Version:             2.3.0
+ * Update URI: https://api.freemius.com
  * Author:              OceanWP
  * Author URI:          https://oceanwp.org/
  * Requires at least:   5.6
- * Tested up to:        6.0.0
- * Elementor tested up to: 3.6.5
- * Elementor Pro tested up to: 3.7.1
+ * Tested up to:        6.1
+ * Elementor tested up to: 3.8.0
+ * Elementor Pro tested up to: 3.8.1
  *
  * Text Domain: ocean-elementor-widgets
  * Domain Path: /languages
@@ -93,7 +94,7 @@ final class Ocean_Elementor_Widgets {
 		$this->token       = 'ocean-elementor-widgets';
 		$this->plugin_url  = plugin_dir_url( __FILE__ );
 		$this->plugin_path = plugin_dir_path( __FILE__ );
-		$this->version     = '2.2.2';
+		$this->version     = '2.3.0';
 
 		define( 'OWP_ELEMENTOR__FILE__', __FILE__ );
 		define( 'OWP_ELEMENTOR_PATH', $this->plugin_path );

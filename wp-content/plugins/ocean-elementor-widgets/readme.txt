@@ -1,10 +1,10 @@
 === Ocean Elementor Widgets ===
 Contributors: oceanwp, freemius, apprimit, wpfleek, abhikr781
 Requires at least: 5.6
-Tested up to: 6.0.0
-Stable tag: 2.2.2
-Elementor tested up to: 3.6.5
-Elementor Pro tested up to: 3.7.1
+Tested up to: 6.1
+Stable tag: 2.3.0
+Elementor tested up to: 3.8.0
+Elementor Pro tested up to: 3.8.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -26,6 +26,24 @@ This plugin requires the [OceanWP](https://oceanwp.org/) theme to be installed.
 This plugin will only work with the [OceanWP](https://oceanwp.org/) theme.
 
 == Changelog ==
+
+= 2.3.0 - NOV 9 2022 =
+- NEW: Magazine Hero Grid widget.
+- NEW: Magazine List widget.
+- NEW: Magazine Hero widget.
+- NEW: Magazine Grid widget.
+- NEW: Magazine Grid Simple widget.
+- NEW: Make Elementor column clickable.
+- Fixed: Login Form: Redirecting to a 404 page after login.
+- Fixed: Blog Grid: Pagination doesn't function.
+- Fixed: Modal: When timer option is in use the scroll bar disappears.
+- Fixed: Woo Slider: Excluding products query doesn't function.
+- Fixed: Woo Cart Icon: Cart not displayed after product is added to the cart action.
+- Fixed: Google reCAPTCHA v3 validation issue.
+
+= 2.2.3 =
+- Added: Blog Grid: Offset feature for posts exclusion.
+- Added: Blog Carousel: Offset feature for posts exclusion.
 
 = 2.2.2 =
 - Fixed: Modal widgets: Modal popup is not opening when using Timer Ppopup and Exit Intent layout.

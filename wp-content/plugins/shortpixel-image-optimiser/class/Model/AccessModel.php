@@ -2,6 +2,7 @@
 namespace ShortPixel\Model;
 
 use ShortPixel\ShortpixelLogger\ShortPixelLogger as Log;
+use ShortPixel\Controller\QuotaController as QuotaController;
 
 // Central place for user / access checking, roles etc.
 class AccessModel
@@ -46,7 +47,7 @@ class AccessModel
 	}
 
 	/** Check for allowing a notice
-	*  @param $notice Object of type notice.  Currently unused, future provision.
+	*  @param $notice Object of type notice.
 	*/
 	public function noticeIsAllowed($notice)
 	{
@@ -78,6 +79,30 @@ class AccessModel
 				}
 			}
 			return false;
+	}
+
+	public function isFeatureAvailable($name)
+	{
+		 $available = true;
+
+		 switch($name)
+		 {
+			  case 'avif':
+					$quotaControl = QuotaController::getInstance();
+					$quota = $quotaControl->getQuota();
+
+					if (property_exists($quota, 'unlimited') && $quota->unlimited === true)
+					{
+						$available = false;
+					}
+
+				break;
+				case 'webp':
+				default:
+
+				break;
+		 }
+		 return $available;
 	}
 
 

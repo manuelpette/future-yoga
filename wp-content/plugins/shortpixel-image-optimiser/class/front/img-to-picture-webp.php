@@ -17,7 +17,6 @@ class ShortPixelImgToPictureWebp
             return $content; // . (isset($_GET['SHORTPIXEL_DEBUG']) ? '<!--  -->' : '');
         }
 
-
         $new_content = $this->testPictures($content);
         if ($new_content !== false)
         {
@@ -36,7 +35,7 @@ class ShortPixelImgToPictureWebp
         // [BS] No callback because we need preg_match_all
         $content = $this->testInlineStyle($content);
       //  $content = preg_replace_callback('/background.*[^:]url\([\'|"](.*)[\'|"]\)[,;]/imU',array('self', 'convertInlineStyle'), $content);
-        Log::addDebug('SPDBG WebP process done');
+      //  Log::addDebug('SPDBG WebP process done');
 
         return $content; // . (isset($_GET['SHORTPIXEL_DEBUG']) ? '<!-- SPDBG WebP converted -->' : '');
 
@@ -159,13 +158,13 @@ class ShortPixelImgToPictureWebp
         $srcsetInfo = $this->lazyGet($img, 'srcset');
         $sizesInfo = $this->lazyGet($img, 'sizes');
 
+				// FILTERS : FileDir (OBJECT) - URL
         $imageBase = apply_filters( 'shortpixel_webp_image_base', $this->getImageBase($srcInfo['value']), $srcInfo['value']);
 
         if($imageBase === false) {
             Log::addInfo('SPDBG baseurl doesn\'t match ' . $srcInfo['value'], array($imageBase) );
             return $match[0]; // . (isset($_GET['SHORTPIXEL_DEBUG']) ? '<!-- SPDBG baseurl doesn\'t match ' . $src . '  -->' : '');
         }
-      //  Log::addDebug('ImageBase ' . $imageBase);
 
         //some attributes should not be moved from <img>
         // @todo Move these to unset on (imgpicture) and put via create_attributes back
@@ -216,12 +215,17 @@ class ShortPixelImgToPictureWebp
                   continue;
                 $condition = isset($parts[1]) ? ' ' . $parts[1] : '';
 
-                Log::addDebug('Running item - ' . $item, $fileurl);
+           //     Log::addDebug('Running item - ' . $item, $fileurl);
 
                 $fsFile = $fs->getFile($fileurl);
                 $extension = $fsFile->getExtension(); // trigger setFileinfo, which will resolve URL -> Path
 
                 $mime = $fsFile->getMime();
+								// Can happen when file is virtual, or other cases. Just assume this type.
+								if ($mime === false)
+								{
+									 $mime = 'image/' .  $extension;
+								}
 
                 $fileWebp = $fs->getFile($imageBase . $fsFile->getFileBase() . '.webp');
                 $fileWebpCompat = $fs->getFile($imageBase . $fsFile->getFileName() . '.webp');
@@ -236,6 +240,7 @@ class ShortPixelImgToPictureWebp
                 {
                   if (! $thisfile->exists())
                   {
+										// FILTER: boolean, object, string, filedir
                     $thisfile = $fileWebp_exists = apply_filters('shortpixel/front/webp_notfound', false, $thisfile, $fileurl, $imageBase);
                   }
 
@@ -248,6 +253,7 @@ class ShortPixelImgToPictureWebp
                   }
                 }
 
+								//@todo This will not work with offloaded avifs.
                 if ($fileAvif->exists())
                 {
                    $fileurl_base = str_replace($fsFile->getFileName(), '', $fileurl);

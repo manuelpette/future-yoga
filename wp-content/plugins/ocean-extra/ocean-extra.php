@@ -2,12 +2,12 @@
 /**
  * Plugin Name:         Ocean Extra
  * Plugin URI:          https://oceanwp.org/extension/ocean-extra/
- * Description:         Add extra features like widgets, metaboxes, import/export and a panel to activate the premium extensions.
- * Version:             2.0.2
+ * Description:         Add extra features and flexibility to your OceanWP theme for a turbocharged premium experience and full control over every aspect of your website.
+ * Version:             2.0.6
  * Author:              OceanWP
  * Author URI:          https://oceanwp.org/
  * Requires at least:   5.6
- * Tested up to:        6.0.0
+ * Tested up to:        6.1
  * Text Domain: ocean-extra
  * Domain Path: /languages
  *
@@ -90,7 +90,7 @@ final class Ocean_Extra {
 		$this->token       = 'ocean-extra';
 		$this->plugin_url  = plugin_dir_url( __FILE__ );
 		$this->plugin_path = plugin_dir_path( __FILE__ );
-		$this->version     = '2.0.2';
+		$this->version     = '2.0.6';
 
 		define( 'OE_URL', $this->plugin_url );
 		define( 'OE_PATH', $this->plugin_path );
@@ -114,6 +114,19 @@ final class Ocean_Extra {
 		// Menu icons
 		$theme = wp_get_theme();
 		if ( 'OceanWP' == $theme->name || 'oceanwp' == $theme->template ) {
+
+			if ( get_template_directory() == get_stylesheet_directory() ) {
+				$current_theme_version  = theme_version();
+			} else {
+				$parent = wp_get_theme()->parent(); 
+				// get parent version 
+				if ( ! empty( $parent) ) {
+					$current_theme_version = $parent->Version;
+				}
+			}
+			$required_theme_version = '3.3.3';
+
+
 			require_once OE_PATH . '/includes/panel/theme-panel.php';
 			require_once OE_PATH . '/includes/panel/integrations-tab.php';
 			$oe_library_active_status = get_option( 'oe_library_active_status', 'yes' );
@@ -125,6 +138,11 @@ final class Ocean_Extra {
 			// require_once OE_PATH . '/includes/wizard/wizard.php';
 
 			require_once OE_PATH . '/includes/themepanel/theme-panel.php';
+
+
+			if ( ! empty( $current_theme_version ) && ! empty( $required_theme_version ) && version_compare( $current_theme_version, $required_theme_version , '>' ) ) {
+				require_once OE_PATH . '/includes/compatibility/ocean.php';
+			}
 
 
 			// Outputs custom JS to the footer
@@ -358,6 +376,11 @@ final class Ocean_Extra {
 			require_once OE_PATH . '/includes/ocean-extra-strings.php';
 			require_once OE_PATH . '/includes/dashboard.php';
 			require_once OE_PATH . '/includes/panel/demos.php';
+			$oe_notification_active_status = get_option( 'oe_notification_active_status', 'no' );
+			if( $oe_notification_active_status == 'no' ) {
+				require_once OE_PATH . '/includes/admin-bar/admin-bar.php';
+				require_once OE_PATH . '/includes/admin-bar/notifications.php';
+			}
 
 			add_action( 'wp_enqueue_scripts', array( $this, 'scripts' ), 999 );
 		}

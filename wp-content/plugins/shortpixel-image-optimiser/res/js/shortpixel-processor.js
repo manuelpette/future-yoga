@@ -21,7 +21,7 @@ window.ShortPixelProcessor =
     isActive: false,
     defaultInterval: 3000, // @todo customize this from backend var, hook filter.  default is onload interval
     interval: 3000, // is current interval. When nothing to be done increases
-    deferInterval: 60000, // how long to wait between interval to check for new items.
+    deferInterval: 15000, // how long to wait between interval to check for new items.
     screen: null, // UI Object
     tooltip: null,
     isBulkPage: false,
@@ -99,7 +99,7 @@ window.ShortPixelProcessor =
 
 
         this.tooltip = new ShortPixelToolTip({}, this);
-				
+
         if (typeof ShortPixelScreen == 'undefined')
         {
            console.error('Missing Screen!');
@@ -205,7 +205,9 @@ window.ShortPixelProcessor =
     Process: function()
     {
         if (this.worker === null)
+				{
            this.LoadWorker(); // JIT worker loading
+				}
 
         //this.tooltip.DoingProcess();
         this.worker.postMessage({action: 'process', 'nonce' : this.nonce['process']});
@@ -226,7 +228,7 @@ window.ShortPixelProcessor =
         //if (this.timesEmpty >= 5) // conflicts with the stop defer.
         //   this.interval = 2000 + (this.timesEmpty * 1000);  // every time it turns up empty, second slower.
 
-        console.log('Processor: Run Process');
+        console.log('Processor: Run Process in ' + this.interval);
 
         this.timer = window.setTimeout(this.Process.bind(this), this.interval);
     },
@@ -298,6 +300,9 @@ window.ShortPixelProcessor =
       if (data.status == true && data.response) // data status is from shortpixel worker, not the response object
       {
           var response = data.response;
+					var handledError = false; // prevent passing to regular queueHandler is some action is taken.
+					this.workerErrors = 0;
+
           if ( response.callback)
           {
               console.log('Running callback : ' + response.callback);
@@ -309,11 +314,13 @@ window.ShortPixelProcessor =
           }
           if ( response.status == false)
           {
+
              // This is error status, or a usual shutdown, i.e. when process is in another browser.
              var error = this.aStatusError[response.error];
              if (error == 'PROCESSOR_ACTIVE')
              {
                this.Debug(response.message);
+							 handledError = true;
                this.StopProcess();
              }
              else if (error == 'NONCE_FAILED')
@@ -328,12 +335,18 @@ window.ShortPixelProcessor =
 								this.screen.HandleError(response);
                 this.Debug('No Quota - CheckResponse handler');
 								this.PauseProcess();
+								handledError = true;
              }
              else if (response.error < 0) // something happened.
              {
                this.StopProcess();
+							 handledError = true;
+							 console.error('Some unknown error occured!', response.error, response);
              }
-           }
+
+						 if (handledError == true)
+						 	 	return; 
+           } // status false handler.
 
            // Check the screen if we are custom or media ( or bulk ) . Check the responses for each of those.
            if (typeof response.custom == 'object' && response.custom !== null)
@@ -379,8 +392,11 @@ window.ShortPixelProcessor =
 							 this.Debug(message, 'error');
 						}
 
-						if (this.workerErrors >= 3)
+						if (this.workerErrors >= 5)
+						{
 							this.StopProcess();
+							this.ShutDownWorker();
+						}
 						else
 							this.StopProcess({ defer: true });
 
@@ -411,6 +427,7 @@ window.ShortPixelProcessor =
          // If there are items, give them to the screen for display of optimization, waiting status etc.
 				 var imageHandled = false;  // Only post one image per result-set to the ImageHandler (on bulk), to prevent flooding.
 
+				 // @todo Make sure that .result and .results can be iterated the same.
          if (typeof response.results !== 'undefined' && response.results !== null)
          {
              for (var i = 0; i < response.results.length; i++)
@@ -436,9 +453,10 @@ window.ShortPixelProcessor =
          if (typeof response.result !== 'undefined' && response.result !== null)
          {
               if (response.result.is_error)
-                this.HandleItemError(response.result, type);
-
-							if (! imageHandled)
+							{
+									this.HandleItemError(response.result, type);
+							}
+							else if (! imageHandled)
 							{
               	imageHandled = this.screen.HandleImage(response, type); // whole response here is single item. (final!)
 							}
@@ -472,7 +490,7 @@ window.ShortPixelProcessor =
 
       if (combinedStatus == 100)
 			{
-
+					this.StopProcess({ defer: true });
 		       return false; // no status in this request.
 			}
 
@@ -500,11 +518,8 @@ window.ShortPixelProcessor =
           else if (qstatus == "PREPARING_DONE")
           {
               console.log('Processor: Preparing is done');
-              //this.tooltip.ProcessEnd();
               this.StopProcess();
 
-              //if (typeof this.screen.preparingDone == 'function')
-               // this.screen.PreparingDone();
           }
 
           // React to status of the queue.
@@ -512,6 +527,7 @@ window.ShortPixelProcessor =
            this.screen.QueueStatus(qstatus, data);
       }
     },
+
     HandleItemError : function(result, type)
     {
         console.log('Handle Item Error', result, type);
@@ -539,6 +555,10 @@ window.ShortPixelProcessor =
 
        this.worker.postMessage({action: 'ajaxRequest', 'nonce' : this.nonce['ajaxRequest'], 'data': data });
     },
+		GetPluginUrl: function()
+		{
+			 return ShortPixelConstants[0].WP_PLUGIN_URL;
+		},
     Debug: function (message, messageType)
     {
       if (typeof messageType == 'undefined')

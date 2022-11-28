@@ -1,9 +1,12 @@
+@import 'elements/animation';
+
 
 @import 'view/edit-media';
 @import 'view/other-media';
 @import 'view/list-item';
 @import 'view/modal';
 @import 'view/debug';
+
 
 // General Styles ( mostly from style.css )
 
@@ -12,6 +15,11 @@
     display: none !important;
 }
 
+// Reserve some space for the processing text on bottom.
+.button-primary.optimize
+{
+	 margin-bottom: 16px;
+}
 
 .switch_button
 {
@@ -28,7 +36,7 @@
 		}
 	}
 	input { display: none;
-		&:checked ~ .the_switch { background: #1fbec9; } // background of bar when active
+		&:checked ~ .the_switch { background: #7cdce4; } // background of bar when active
 		&:checked ~ .the_switch:after {
 			left: 20px;
 			background: #1caecb; // color of circle when active
@@ -53,7 +61,7 @@
 		&:after {
 			position: absolute;
 			left: -2px;
-			top: -4px;
+			top: -5px;
 			display: block;
 			width: 20px;
 			height: 20px;

@@ -83,6 +83,14 @@ class Facebook_Feed extends Widget_Base
             ]
         );
 
+	    $this->add_control(
+		    'ea_facebook_credentials_heading',
+		    [
+			    'label' => esc_html__( 'Credentials', 'essential-addons-for-elementor-lite' ),
+			    'type' => Controls_Manager::HEADING,
+		    ]
+	    );
+
         $this->add_control(
             'eael_facebook_feed_page_id',
             [
@@ -91,18 +99,18 @@ class Facebook_Feed extends Widget_Base
                 'dynamic' => ['active' => true],
                 'label_block' => true,
                 'default' => '',
-                'description' => __('<a href="https://findidfb.com/" class="eael-btn" target="_blank">Find Your Page ID</a>', 'essential-addons-for-elementor-lite'),
             ]
         );
 
         $this->add_control(
             'eael_facebook_feed_access_token',
             [
-                'label' => esc_html__('Access Token', 'essential-addons-for-elementor-lite'),
+                'label' => esc_html__('Secret Key', 'essential-addons-for-elementor-lite'),
                 'type' => Controls_Manager::TEXT,
                 'label_block' => true,
                 'default' => '',
-                'description' => __('<a href="https://essential-addons.com/elementor/docs/facebook-feed/" class="eael-btn" target="_blank">Get Access Token</a>', 'essential-addons-for-elementor-lite'),
+                'separator' => 'after',
+                'description' => __('<a href="https://app.essential-addons.com/facebook/" class="eael-btn" target="_blank">Get Credentials</a>', 'essential-addons-for-elementor-lite'),
             ]
         );
 
@@ -194,9 +202,6 @@ class Facebook_Feed extends Widget_Base
                 'condition' => [
                     'eael_facebook_feed_force_square_img' => 'yes'
                 ],
-                'selectors' => [
-                    '{{WRAPPER}} .eael-facebook-feed-square-image .eael-facebook-feed-item img.eael-facebook-feed-img' => 'object-fit: {{VALUE}};'
-                ]
             ]
         );
 
@@ -219,7 +224,8 @@ class Facebook_Feed extends Widget_Base
                     'eael_facebook_feed_force_square_img' => 'yes'
                 ],
                 'selectors' => [
-                    '{{WRAPPER}} .eael-facebook-feed-square-image .eael-facebook-feed-item img.eael-facebook-feed-img' => 'height: {{SIZE}}{{UNIT}}; width: {{SIZE}}{{UNIT}};'
+	                '{{WRAPPER}} .eael-facebook-feed-square-image .eael-facebook-feed-item img.eael-facebook-feed-img' => 'height: {{SIZE}}{{UNIT}}; width: {{SIZE}}{{UNIT}};',
+                    '{{WRAPPER}} .eael-facebook-feed-square-image .eael-facebook-feed-item .eael-facebook-feed-img-container' => 'height: {{SIZE}}{{UNIT}}; width: {{SIZE}}{{UNIT}};'
                 ]
             ]
         );
@@ -605,7 +611,8 @@ class Facebook_Feed extends Widget_Base
                 'type' => Controls_Manager::DIMENSIONS,
                 'size_units' => ['px', '%', 'em'],
                 'selectors' => [
-                    '{{WRAPPER}} .eael-facebook-feed-item .eael-facebook-feed-img' => 'border-radius: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};',
+	                '{{WRAPPER}} .eael-facebook-feed-item .eael-facebook-feed-img' => 'border-radius: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};',
+	                '{{WRAPPER}} .eael-facebook-feed-item .eael-facebook-feed-img-container' => 'border-radius: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};',
                 ],
             ]
         );

@@ -8,11 +8,9 @@
   box-shadow: 0 1px 1px rgba(0, 0, 0, 0.04);
   border: 1px solid #c3c4c7;
   margin: 15px 0;
+  border-left-width: 4px;
   border-left-color: #72aee6;
   position: relative;
-}
-.shortpixel.shortpixel-notice .notice-dismiss {
-  margin-top: 10px;
 }
 .shortpixel.shortpixel-notice span {
   vertical-align: middle;
@@ -23,6 +21,8 @@
 }
 .shortpixel.shortpixel-notice span.content {
   padding: 8px 0;
+  word-wrap: break-word;
+  overflow: hidden;
 }
 .shortpixel.shortpixel-notice .details-wrapper {
   margin: 8px 0 4px 0;

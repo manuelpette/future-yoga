@@ -325,6 +325,18 @@ class Woo_Products extends Widget_Base {
 				),
 			)
 		);
+		
+		$this->add_control(
+			'hide_out_of_stock',
+			array(
+				'label'        => esc_html__( 'Hide Out of Stock Products', 'ocean-elementor-widgets' ),
+				'type'         => Controls_Manager::SWITCHER,
+				'label_on'     => esc_html__( 'Show', 'ocean-elementor-widgets' ),
+				'label_off'    => esc_html__( 'Hide', 'ocean-elementor-widgets' ),
+				'return_value' => 'yes',
+				'default'      => 'no',
+			)
+		);
 
 		$this->end_controls_section();
 
@@ -1040,7 +1052,7 @@ class Woo_Products extends Widget_Base {
 			}
 		}
 
-		if ( get_option( 'woocommerce_hide_out_of_stock_items' ) === 'yes' ) {
+		if ( 'yes' == $settings['hide_out_of_stock'] ) {
 			$inStockQuery = array(
 				'key' => '_stock_status',
 				'value' => 'instock'

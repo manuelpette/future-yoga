@@ -8,6 +8,7 @@
 
 namespace Tribe\Events\Views\V2;
 
+use Tribe\Events\Models\Post_Types\Event;
 use Tribe\Events\Views\V2\Template\Settings\Advanced_Display;
 use Tribe\Events\Views\V2\Template\Title;
 use Tribe\Events\Views\V2\Utils;
@@ -16,6 +17,7 @@ use Tribe\Events\Views\V2\Views\Traits\Breakpoint_Behavior;
 use Tribe\Events\Views\V2\Views\Traits\HTML_Cache;
 use Tribe\Events\Views\V2\Views\Traits\iCal_Data;
 use Tribe\Events\Views\V2\Views\Traits\Json_Ld_Data;
+use Tribe\Utils\Taxonomy;
 use Tribe__Container as Container;
 use Tribe__Context as Context;
 use Tribe__Date_Utils as Dates;
@@ -25,6 +27,7 @@ use Tribe__Events__Rewrite as TEC_Rewrite;
 use Tribe__Events__Venue as Venue;
 use Tribe__Repository__Interface as Repository;
 use Tribe__Utils__Array as Arr;
+use WP_Post;
 
 /**
  * Class View
@@ -47,13 +50,6 @@ class View implements View_Interface {
 	protected static $container;
 
 	/**
-	 * The slug of the not found view.
-	 *
-	 * @var string
-	 */
-	protected $not_found_slug;
-
-	/**
 	 * An instance of the context the View will use to render, if any.
 	 *
 	 * @var Context
@@ -67,7 +63,7 @@ class View implements View_Interface {
 	 *
 	 * @var string
 	 */
-	protected $slug = '';
+	protected $slug = 'view';
 
 	/**
 	 * The template slug the View instance will use to locate its template files.
@@ -167,7 +163,7 @@ class View implements View_Interface {
 	protected $should_manage_url = true;
 
 	/**
-	 * An collection of user-facing messages the View should display.
+	 * A collection of user-facing messages the View should display.
 	 *
 	 * @since 4.9.11
 	 *
@@ -222,6 +218,16 @@ class View implements View_Interface {
 	protected $cached_urls = [];
 
 	/**
+	 * The translated label string for the view.
+	 * Subject to later filters.
+	 *
+	 * @since 6.0.4
+	 *
+	 * @var string
+	 */
+	protected static $label = 'View';
+
+	/**
 	 * View constructor.
 	 *
 	 * @since 4.9.11
@@ -230,7 +236,8 @@ class View implements View_Interface {
 	 */
 	public function __construct( Messages $messages = null ) {
 		$this->messages = $messages ?: new Messages();
-		$this->rewrite = TEC_Rewrite::instance();
+		$this->rewrite  = TEC_Rewrite::instance();
+
 
 		// For plain permalinks, the pagination variable is "page".
 		if ( $this->rewrite->is_plain_permalink() ) {
@@ -402,16 +409,16 @@ class View implements View_Interface {
 			$view = $default_view;
 		}
 
-		list( $view_slug, $view_class ) = $manager->get_view( $view );
+		[ $view_slug, $view_class ] = $manager->get_view( $view );
 
 		// When not found use the default view.
 		if ( ! $view_class ) {
-			list( $view_slug, $view_class ) = $manager->get_view( $default_view );
+			[ $view_slug, $view_class ] = $manager->get_view( $default_view );
 		}
 
 		// Make sure we are using Reflector when it fails
 		if ( ! class_exists( $view_class ) ) {
-			list( $view_slug, $view_class ) = $manager->get_view( 'reflector' );
+			[ $view_slug, $view_class ] = $manager->get_view( 'reflector' );
 		}
 
 		if ( ! self::$container instanceof Container ) {
@@ -584,8 +591,13 @@ class View implements View_Interface {
 	 * {@inheritDoc}
 	 */
 	public function get_html() {
+		add_filter( 'tec_events_get_current_view', [ $this, 'filter_set_current_view' ] );
+
 		if ( self::class === static::class ) {
-			return $this->template->render();
+			$html = $this->template->render();
+			remove_filter( 'tec_events_get_current_view', [ $this, 'filter_set_current_view' ] );
+
+			return $html;
 		}
 
 		if ( $this->should_reset_page() ) {
@@ -619,6 +631,7 @@ class View implements View_Interface {
 			method_exists( $this, 'maybe_get_cached_html' )
 			&& $cached_html = $this->maybe_get_cached_html()
 		) {
+			remove_filter( 'tec_events_get_current_view', [ $this, 'filter_set_current_view' ] );
 			return $cached_html;
 		}
 
@@ -649,15 +662,64 @@ class View implements View_Interface {
 		}
 
 		remove_filter( 'tribe_repository_query_arg_offset_override', [ $this, 'filter_repository_query_arg_offset_override' ], 10, 2 );
+		remove_filter( 'tec_events_get_current_view', [ $this, 'filter_set_current_view' ] );
 
 		return $html;
+	}
+
+	/**
+	 * Returns the view label value after filtering.
+	 *
+	 * This is the method you want to overwrite to replace the label for a view with translations.
+	 *
+	 * @since 6.0.4
+	 *
+	 * @return string
+	 */
+	public static function get_view_label(): string {
+		return static::filter_view_label( static::$label );
+	}
+
+	/**
+	 * Filters the view label value allowing changes to be made.
+	 *
+	 * @since 6.0.4
+	 *
+	 * @param string $label Which label we are filtering for.
+	 *
+	 * @return string
+	 */
+	protected static function filter_view_label( string $label ): string {
+		/**
+		 * On the next feature version we need to remove.
+		 */
+		$slug = tribe( Manager::class )->get_view_slug_by_class( self::class );
+
+		/**
+		 * Filters the label that will be used on the UI for views listing.
+		 *
+		 * @since 6.0.4
+		 *
+		 * @param string $label        Label of the Current view.
+		 * @param string $slug         Slug of the view we are getting the label for.
+		 */
+		$label = apply_filters( 'tec_events_views_v2_view_label', $label, $slug );
+
+		/**
+		 * Filters the label that will be used on the UI for views listing.
+		 *
+		 * @since 6.0.4
+		 *
+		 * @param string $label        Label of the Current view.
+		 */
+		return (string) apply_filters( "tec_events_views_v2_{$slug}_view_label", $label );
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
 	public function get_label() {
-		return tribe( Manager::class )->get_view_label_by_slug( $this->get_slug() );
+		return static::get_view_label();
 	}
 
 	/**
@@ -1130,6 +1192,7 @@ class View implements View_Interface {
 	protected function filter_template_vars( array $template_vars ) {
 		$events                        = $template_vars['events'] ?: [];
 
+
 		/*
 		 * Add the JSON-LD data here as all Views will pass from this code, but not all Views will call the
 		 * `View::setup_template_vars` method.
@@ -1451,6 +1514,19 @@ class View implements View_Interface {
 			return $event instanceof \WP_Post;
 		} );
 
+		Taxonomy::prime_term_cache( $events );
+		Event::prime_cache( $events );
+
+		/**
+		 * Action triggered right after pulling all the Events from the DB, allowing cache to be primed corectly.
+		 *
+		 * @since 6.0.0
+		 *
+		 * @param array<WP_Post> $events Which events were just selected.
+		 * @param self           $view   Which view we are dealing with.
+		 */
+		do_action( 'tec_events_views_v2_after_get_events', $events, $this );
+
 		$is_paginated = isset( $this->repository_args['posts_per_page'] ) && -1 !== $this->repository_args['posts_per_page'];
 
 		/*
@@ -1469,6 +1545,42 @@ class View implements View_Interface {
 
 		$today_url      = $this->get_today_url( true );
 		$today          = $this->context->get( 'today', 'today' );
+		// The "Today" button title and aria-label text.
+		$today_title    = _x(
+			'Click to select today\'s date',
+			'The default title text for the today button.',
+			'the-events-calendar'
+		);
+
+		/**
+		 * Allows filtering of the "Today" button title and aria-label.
+		 *
+		 * @since 6.0.2
+		 *
+		 * @param string                                $today_title The title string.
+		 * @param \Tribe\Events\Views\V2\View_Interface $view        The View currently rendering.
+		 */
+		$today_title = apply_filters(
+			'tec_events_today_button_title',
+			$today_title,
+			$this
+		);
+
+		/**
+		 * Allows filtering of the "Today" button title and aria-label.
+		 *
+		 * @since 6.0.2
+		 *
+		 * @param string                                $today_title The title string.
+		 * @param \Tribe\Events\Views\V2\View_Interface $view        The View currently rendering.
+		 */
+		$today_title = apply_filters(
+			'tec_events_view_' . $this->slug . '_today_button_title',
+			$today_title,
+			$this
+		);
+
+		$today_label = tec_events_get_today_button_label( $this );
 
 		$event_date = $this->context->get( 'event_date', false );
 
@@ -1511,6 +1623,8 @@ class View implements View_Interface {
 			'rest_nonce'           => $rest_nonce,
 			'should_manage_url'    => $this->should_manage_url,
 			'today_url'            => $today_url,
+			'today_title'          => $today_title,
+			'today_label'          => $today_label,
 			'prev_label'           => $this->get_link_label( $this->prev_url( false ) ),
 			'next_label'           => $this->get_link_label( $this->next_url( false ) ),
 			'date_formats'         => (object) [
@@ -1997,6 +2111,11 @@ class View implements View_Interface {
 
 		// Get term slug if taxonomy is not empty
 		if ( ! empty( $context_tax ) ) {
+			// Don't pass arrays to get_term_by()!
+			if ( is_array( $context_tax ) ) {
+				$context_tax = array_pop( $context_tax );
+			}
+
 			$term  = get_term_by( 'slug', $context_tax, $taxonomy );
 			if ( ! empty( $term->name ) ) {
 				$label = $term->name;
@@ -2342,8 +2461,8 @@ class View implements View_Interface {
 				break;
 
 			case 'week':
-				list( $today_week_start, $today_week_end ) = Dates::get_week_start_end( $today, (int) $this->context->get( 'start_of_week', 0 ) );
-				list( $view_week_start, $view_week_end )   = Dates::get_week_start_end( $view_date, (int) $this->context->get( 'start_of_week', 0 ) );
+				[ $today_week_start, $today_week_end ] = Dates::get_week_start_end( $today, (int) $this->context->get( 'start_of_week', 0 ) );
+				[ $view_week_start, $view_week_end ]   = Dates::get_week_start_end( $view_date, (int) $this->context->get( 'start_of_week', 0 ) );
 
 				$today_formatted     = $today_week_start->format( Dates::DBDATEFORMAT );
 				$view_date_formatted = $view_week_start->format( Dates::DBDATEFORMAT );
@@ -2497,6 +2616,19 @@ class View implements View_Interface {
 		);
 
 		return $repository_args;
+	}
+
+	/**
+	 * Filters the current template current view which allows you to pull globally which view is currently being rendered.
+	 *
+	 * @since 6.0.0
+	 *
+	 * @param View_Interface  $view Which is the previous view.
+	 *
+	 * @return self
+	 */
+	public function filter_set_current_view( $view ) {
+		return $this;
 	}
 
 	/**

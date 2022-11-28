@@ -163,6 +163,15 @@ class Blog_Grid extends Widget_Base {
 		);
 
 		$this->add_control(
+			'offset',
+			array(
+				'label' => esc_html__( 'Post Offset', 'ocean-elementor-widgets' ),
+				'type' => Controls_Manager::NUMBER,
+				'default' => '0'
+			)
+		);
+
+		$this->add_control(
 			'order',
 			array(
 				'label'   => __( 'Order', 'ocean-elementor-widgets' ),
@@ -639,6 +648,7 @@ class Blog_Grid extends Widget_Base {
 		$include        = $settings['include_categories'];
 		$exclude        = $settings['post__not_in'];
 		$pagination     = $settings['pagination'];
+		$offset         = isset( $settings['offset'] ) ? $settings['offset']: '';
 
 		// Paged
 		global $paged;
@@ -650,12 +660,15 @@ class Blog_Grid extends Widget_Base {
 			$paged = 1;
 		}
 
+		$offset = ( $paged - 1 ) * $posts_per_page + $offset;
+
 		$args = array(
 			'post_type'      => $post_type,
 			'posts_per_page' => $posts_per_page,
 			'paged'          => $paged,
 			'order'          => $order,
 			'orderby'        => $orderby,
+			'offset'         => $offset,
 		);
 
 		// Include category

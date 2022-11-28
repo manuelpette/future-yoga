@@ -1,12 +1,13 @@
 <?php
 /**
  * Plugin Name:			Ocean Pro Demos
- * Description:			Import the OceanWP pro demos, widgets and customizer settings with one click.
- * Version:				1.3.1
+ * Description:			A premium plugin with powerful and complete options for web designers: import OceanWP Full website templates with all pages and styling; Elementor Sections Library templates; and import images and icons from Freepik.
+ * Version:				1.4.1
+ * Update URI: https://api.freemius.com
  * Author:				OceanWP
  * Author URI:			https://oceanwp.org/
  * Requires at least:	5.6
- * Tested up to:		6.0.0
+ * Tested up to:		6.1
  *
  * Text Domain: ocean-pro-demos
  * Domain Path: /languages
@@ -85,22 +86,50 @@ final class Ocean_Pro_Demos {
 		$this->token 			= 'demos';
 		$this->plugin_url 		= plugin_dir_url( __FILE__ );
 		$this->plugin_path 		= plugin_dir_path( __FILE__ );
-		$this->version 			= '1.3.1';
+		$this->version 			= '1.4.1';
 
 		define( 'OPD_PATH', $this->plugin_path );
 		define( 'OPD_URL', $this->plugin_url );
+		define( 'OPD_VERSION', $this->version );
 
 		register_activation_hook( __FILE__, array( $this, 'install' ) );
 
 		add_action( 'init', array( $this, 'load_plugin_textdomain' ) );
 
 		include_once plugin_dir_path(__FILE__) . 'api-images.php';
-	}
 
+	}
+	
 	public function init() {
         // Add pro demos in the demos page
         add_filter( 'owp_demos_data', array( $this, 'get_pro_demos' ) );
+		
+		$ocean_elementor_library_is_disabled = get_option('disable_ocean_elementor_library', 'no') == 'yes';
+
+		
+		// Include Elementor Library.	
+		if ( did_action( 'elementor/loaded' ) && is_user_logged_in() && ! $ocean_elementor_library_is_disabled ) {
+			include_once( OPD_PATH . 'elementor-library/classes/class-lib-mngr.php' );
+			include_once( OPD_PATH . 'elementor-library/classes/class-lib-src.php' );
+		}
     }
+
+	public function admin_notice_missing_main_plugin() {
+		return sprintf(
+			wp_kses(
+				'<div class="notice notice-warning is-dismissible"><p><strong>"%1$s"</strong> requires <strong>"%2$s"</strong> to be installed and activated.</p></div>',
+				array(
+					'div' => array(
+						'class'  => array(),
+						'p'      => array(),
+						'strong' => array(),
+					),
+				)
+			),
+			'Ocean Elementor Library',
+			'Elementor'
+		);
+	}
 
 	/**
 	 * Main Ocean_Pro_Demos Instance
@@ -168,6 +197,19 @@ final class Ocean_Pro_Demos {
 		update_option( $this->token . '-version', $this->version );
 	}
 
+	public static function ocean_elementor_library_html_path( $file ) {
+		$file = OPD_PATH . 'elementor-library/ocean_elementor_library_panel.php';
+		return $file;
+	}
+
+	public static function add_theme_panel_section( $sections ) {
+		$sections['ocean-elementor-library'] = array(
+			'title' => __( 'Elementor Library', 'oceanwp' ),
+			'href'  => 'ocean-elementor-library',
+			'order' => 91,
+		);
+		return $sections;
+	}
 	/**
 	 * Get pro demos.
 	 *

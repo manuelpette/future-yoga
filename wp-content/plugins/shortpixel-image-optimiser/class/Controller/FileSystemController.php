@@ -17,6 +17,8 @@ use ShortPixel\Model\Image\CustomImageModel as CustomImageModel;
 Class FileSystemController extends \ShortPixel\Controller
 {
     protected $env;
+		static $mediaItems = array();
+		static $customItems = array();
 
     public function __construct()
     {
@@ -37,8 +39,13 @@ Class FileSystemController extends \ShortPixel\Controller
     /** Get MediaLibraryModel for a Post_id
 		* @param int $id
 		*/
-    public function getMediaImage($id)
+    public function getMediaImage($id, $useCache = true)
     {
+				if ($useCache === true && isset(self::$mediaItems[$id]))
+				{
+					 return self::$mediaItems[$id];
+				}
+
         $filepath = get_attached_file($id);
         $filepath = apply_filters('shortpixel_get_attached_file', $filepath, $id);
 
@@ -47,17 +54,41 @@ Class FileSystemController extends \ShortPixel\Controller
           return false;
 
         $imageObj = new MediaLibraryModel($id, $filepath);
+
+				if (is_object($imageObj))
+				{
+					 self::$mediaItems[$id] = $imageObj;
+				}
         return $imageObj;
     }
 
 		/**
 		* @param int $id
 		*/
-    public function getCustomImage($id)
+    public function getCustomImage($id, $useCache = true)
     {
+				if ($useCache === true && isset(self::$customItems[$id]))
+				{
+				 return self::$customItems[$id];
+				}
+
         $imageObj = new CustomImageModel($id);
+
+				if (is_object($imageObj))
+				{
+					 self::$customItems[$id] = $imageObj;
+				}
+
         return $imageObj;
     }
+
+		// Use sporadically, every time an angel o performance dies.
+		// Required for files that change i.e. enable media replace or other filesystem changing operation.
+		public function flushImageCache()
+		{
+					 self::$mediaItems = array();
+					 self::$customItems = array();
+		}
 
     /** Gets a custom Image Model without being in the database. This is used to check if path is a proper customModel path ( not mediaLibrary ) and see if the file should be included per excusion rules */
     public function getCustomStub( $path, $load = true)
@@ -71,15 +102,15 @@ Class FileSystemController extends \ShortPixel\Controller
 		* int $id
 		* string $type
 		*/
-    public function getImage( $id,  $type)
+    public function getImage( $id,  $type, $useCache = true)
     {
 			// False, OptimizeController does a hard check for false.
       $imageObj = false;
 
       if ($type == 'media')
-        $imageObj = $this->getMediaImage($id);
+        $imageObj = $this->getMediaImage($id, $useCache);
       elseif($type == 'custom')
-        $imageObj = $this->getCustomImage($id);
+        $imageObj = $this->getCustomImage($id, $useCache);
       else
         Log::addError('FileSystemController GetImage - no correct type given: ' . $type);
 
@@ -129,7 +160,8 @@ Class FileSystemController extends \ShortPixel\Controller
          $filepath = apply_filters('shortpixel/file/virtual/translate', $filepath, $file);
       }
 
-      if ($filepath !== $file->getFullPath())
+			//  translate can return false if not properly offloaded / not found there.
+      if ($filepath !== $file->getFullPath() && $filepath !== false)
       {
          $file = $this->getFile($filepath);
       }
@@ -204,10 +236,14 @@ Class FileSystemController extends \ShortPixel\Controller
 				if (defined('UPLOADS')) // if this is set, lead.
 					$abspath = trailingslashit(ABSPATH) . UPLOADS;
 
+//	$abspath = wp_normalize_path($abspath);
         $abspath = apply_filters('shortpixel/filesystem/abspath', $abspath );
+
 
         return $this->getDirectory($abspath);
     }
+
+
 
     /** Not in use yet, do not use. Future replacement. */
     public function checkBackUpFolder($folder = SHORTPIXEL_BACKUP_FOLDER)
@@ -227,12 +263,32 @@ Class FileSystemController extends \ShortPixel\Controller
       $filepath = $file->getFullPath();
       $directory = $file->getFileDir();
 
+			$is_multi_site = $this->env->is_multisite;
+			$is_main_site =  $this->env->is_mainsite;
+
       // stolen from wp_get_attachment_url
       if ( ( $uploads = wp_get_upload_dir() ) && (false === $uploads['error'] || strlen(trim($uploads['error'])) == 0  )  ) {
             // Check that the upload base exists in the file location.
-            if ( 0 === strpos( $filepath, $uploads['basedir'] ) ) {
+            if ( 0 === strpos( $filepath, $uploads['basedir'] ) ) { // Simple as it should, filepath and basedir share.
                 // Replace file location with url location.
                 $url = str_replace( $uploads['basedir'], $uploads['baseurl'], $filepath );
+						}
+						// Multisite backups are stored under uploads/ShortpixelBackups/etc , but basedir would include uploads/sites/2 etc, not matching above
+						// If this is case, test if removing the last two directories will result in a 'clean' uploads reference.
+						// This is used by getting preview path ( backup pathToUrl) in bulk and for comparer..
+					  elseif ($is_multi_site && ! $is_main_site  && 0 === strpos($filepath, dirname(dirname($uploads['basedir']))) )
+						{
+
+								$url = str_replace( dirname(dirname($uploads['basedir'])), dirname(dirname($uploads['baseurl'])), $filepath );
+								$homeUrl = home_url();
+
+								// The result didn't end in a full URL because URL might have less subdirs ( dirname dirname) .
+								// This happens when site has blogs.dir (sigh) on a subdomain . Try to substitue the ABSPATH root with the home_url
+								if (strpos($url, $homeUrl) === false)
+								{
+									 $url = str_replace( trailingslashit(ABSPATH), trailingslashit($homeUrl), $filepath);
+								}
+
             } elseif ( false !== strpos( $filepath, 'wp-content/uploads' ) ) {
                 // Get the directory name relative to the basedir (back compat for pre-2.7 uploads)
                 $url = trailingslashit( $uploads['baseurl'] . '/' . _wp_get_attachment_relative_path( $filepath ) ) . wp_basename( $filepath );
@@ -250,12 +306,12 @@ Class FileSystemController extends \ShortPixel\Controller
           // This is SITE URL, for the same reason it should be home_url in FILEMODEL. The difference is when the site is running on a subdirectory
           // (1) ** This is a fix for a real-life issue, do not change if this causes issues, another fix is needed then.
 		  // (2) ** Also a real life fix when a path is /wwwroot/assets/sites/2/ etc, in get site url, the home URL is the site URL, without appending the sites stuff. Fails on original image.
-		    if ($this->env->is_multisite && ! $this->env->is_mainsite)
-			{
-				$wp_home_path = wp_normalize_path(trailingslashit($uploads['basedir']));
-				$home_url = trailingslashit($uploads['baseurl']);
-			}
-			else
+		    if ($is_multi_site && ! $is_main_site)
+				{
+					$wp_home_path = trailingslashit($uploads['basedir']);
+					$home_url = trailingslashit($uploads['baseurl']);
+				}
+				else
           $home_url = trailingslashit(get_site_url()); // (1)
           $url = str_replace($wp_home_path, $home_url, $filepath);
         }
@@ -350,7 +406,7 @@ Class FileSystemController extends \ShortPixel\Controller
     public function downloadFile($url, $destinationPath)
     {
       $downloadTimeout = max(SHORTPIXEL_MAX_EXECUTION_TIME - 10, 15);
-      $fs = \wpSPIO()->filesystem();
+      $fs = \wpSPIO()->filesystem(); // @todo change this all to $this
     //  $fs = \wpSPIO()->fileSystem();
       $destinationFile = $fs->getFile($destinationPath);
 
@@ -381,11 +437,13 @@ Class FileSystemController extends \ShortPixel\Controller
       }
 
       Log::addDebug('Remote Download attempt result', array($url, $destinationPath));
-      if ($destinationPath->exists())
+      if ($destinationFile->exists())
         return true;
       else
         return false;
     }
+
+
 
     /** Get all files from a directory tree, starting at given dir.
     * @param DirectoryModel $dir to recursive into
@@ -411,6 +469,30 @@ Class FileSystemController extends \ShortPixel\Controller
 
         return $fileArray;
     }
+
+		// Url very sparingly.
+		public function url_exists($url)
+		{
+			 if (! \wpSPIO()->env()->is_function_usable('curl_init'))
+			 {
+				  return null;
+			 }
+
+			$ch = curl_init($url);
+			curl_setopt($ch, CURLOPT_NOBODY, true);
+			curl_exec($ch);
+			$responseCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+			curl_close($ch);
+
+			if ($responseCode == 200)
+			{
+				return true;
+			}
+			else {
+				return false;
+			}
+
+		}
 
     /** Old method of getting a subDir. This is messy and hopefully should not be used anymore. It's added here for backward compat in case of exceptions */
     private function returnOldSubDir($file)

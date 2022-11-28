@@ -67,7 +67,7 @@ class QuotaController
 
     public function getQuota()
     {
-          /*'quotaAvailable' => max(0, $quotaData['APICallsQuotaNumeric'] + $quotaData['APICallsQuotaOneTimeNumeric'] - $quotaData['APICallsMadeNumeric'] - $quotaData['APICallsMadeOneTimeNumeric']))); */
+
           $quotaData = $this->getQuotaData();
           $DateNow = time();
 
@@ -75,8 +75,9 @@ class QuotaController
           $DaysToReset =  30 - ( (int) (  ( $DateNow  - $DateSubscription) / 84600) % 30);
 
           $quota = (object) [
+              'unlimited' => isset($quotaData['Unlimited']) ? $quotaData['Unlimited'] : false,
               'monthly' => (object) [
-                'text' => sprintf(__('%s/month', 'shortpixel-image-optimiser'), $quotaData['APICallsQuota']),
+                'text' =>  sprintf(__('%s/month', 'shortpixel-image-optimiser'), $quotaData['APICallsQuota']),
                 'total' =>  $quotaData['APICallsQuotaNumeric'],
                 'consumed' => $quotaData['APICallsMadeNumeric'],
                 'remaining' => max($quotaData['APICallsQuotaNumeric'] - $quotaData['APICallsMadeNumeric'], 0),
@@ -141,13 +142,15 @@ class QuotaController
     private function resetQuotaExceeded()
     {
         $settings = \wpSPIO()->settings();
-        $dismissed = $settings->dismissedNotices ? $settings->dismissedNotices : array();
 
-        $settings->prioritySkip = array();
-        $settings->dismissedNotices = $dismissed;
         AdminNoticesController::resetAPINotices();
-        AdminNoticesController::resetQuotaNotices();
-        Log::addDebug('Reset Quota Exceeded and reset Notices');
+
+				// Only reset after a quotaExceeded situation, otherwise it keeps popping.
+				if ($settings->quotaExceeded == 1)
+				{
+						AdminNoticesController::resetQuotaNotices();
+				}
+				Log::addDebug('Reset Quota Exceeded and reset Notices');
        	$settings->quotaExceeded = 0;
     }
 
@@ -175,12 +178,11 @@ class QuotaController
           );
           $argsStr = "?key=".$apiKey;
 
-          //if($appendUserAgent) { // See no reason why not(?)
-              $args['body']['useragent'] = "Agent" . urlencode($_SERVER['HTTP_USER_AGENT']);
-              $argsStr .= "&useragent=Agent".$args['body']['useragent'];
-          //}
+					$serverAgent = isset($_SERVER['HTTP_USER_AGENT']) ? urlencode(sanitize_text_field(wp_unslash($_SERVER['HTTP_USER_AGENT']))) : '';
+          $args['body']['useragent'] = "Agent" . $serverAgent;
+          $argsStr .= "&useragent=Agent".$args['body']['useragent'];
 
-          // Only used for keyValidation!
+          // Only used for keyValidation
           if($validate) {
 
               $statsController = StatsController::getInstance();
@@ -297,14 +299,16 @@ class QuotaController
 
           $dataArray = array(
               "APIKeyValid" => true,
-              "APICallsMade" => number_format($data->APICallsMade) . __(' images','shortpixel-image-optimiser'),
-              "APICallsQuota" => number_format($data->APICallsQuota) . __(' images','shortpixel-image-optimiser'),
-              "APICallsMadeOneTime" => number_format($data->APICallsMadeOneTime) . __(' images','shortpixel-image-optimiser'),
-              "APICallsQuotaOneTime" => number_format($data->APICallsQuotaOneTime) . __(' images','shortpixel-image-optimiser'),
+              "APICallsMade" => number_format($data->APICallsMade) . __(' credits','shortpixel-image-optimiser'),
+              "APICallsQuota" => number_format($data->APICallsQuota) . __(' credits','shortpixel-image-optimiser'),
+              "APICallsMadeOneTime" => number_format($data->APICallsMadeOneTime) . __(' credits','shortpixel-image-optimiser'),
+              "APICallsQuotaOneTime" => number_format($data->APICallsQuotaOneTime) . __(' credits','shortpixel-image-optimiser'),
               "APICallsMadeNumeric" => (int) max($data->APICallsMade, 0),
               "APICallsQuotaNumeric" => (int) max($data->APICallsQuota, 0),
               "APICallsMadeOneTimeNumeric" =>  (int) max($data->APICallsMadeOneTime, 0),
               "APICallsQuotaOneTimeNumeric" => (int) max($data->APICallsQuotaOneTime, 0),
+
+              "Unlimited" => ($data->Unlimited == 'true') ? true : false,
 
               "APILastRenewalDate" => $data->DateSubscription,
               "DomainCheck" => (isset($data->DomainCheck) ? $data->DomainCheck : null)
@@ -314,7 +318,7 @@ class QuotaController
 
 					//reset quota exceeded flag -> user is allowed to process more images.
 
-          if ( $dataArray['APICallsRemaining'] > 0)
+          if ( $dataArray['APICallsRemaining'] > 0 || $dataArray['Unlimited'])
 					{
               $this->resetQuotaExceeded();
 					}

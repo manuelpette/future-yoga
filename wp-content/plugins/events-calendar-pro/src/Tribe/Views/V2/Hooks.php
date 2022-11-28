@@ -104,6 +104,8 @@ class Hooks extends \tad_DI52_ServiceProvider {
 		add_filter( 'tribe_events_views_v2_messages_map', [ $this, 'filter_tribe_events_views_v2_messages_map' ] );
 		add_filter( 'tribe_events_views_v2_messages_need_events_label_keys', [ $this, 'filter_tribe_events_views_v2_messages_need_events_label_keys' ] );
 		add_filter( 'tribe_events_pro_geocode_rewrite_rules', [ $this, 'filter_geocode_rewrite_rules' ], 10, 3 );
+		add_filter( 'tec_events_view_week_today_button_label', [ $this, 'filter_tec_events_view_week_today_button_label' ], 10, 2 );
+		add_filter( 'tec_events_view_week_today_button_title', [ $this, 'filter_tec_events_view_week_today_button_title' ], 10, 2 );
 
 		add_filter( 'tribe_events_views_v2_view_all_breadcrumbs', [ $this, 'filter_view_all_breadcrumbs' ], 10, 2 );
 		add_filter( 'tribe_events_views_v2_view_page_reset_ignored_params', [ $this, 'filter_page_reset_ignored_params' ], 10, 2 );
@@ -133,11 +135,13 @@ class Hooks extends \tad_DI52_ServiceProvider {
 		add_filter( 'tribe_events_filter_bar_views_v2_should_display_filters', [ $this, 'filter_hide_filter_bar' ], 10, 2 );
 		add_filter( 'tribe_events_filter_bar_views_v2_1_should_display_filters', [ $this, 'filter_hide_filter_bar' ], 10, 2 );
 
-		add_filter( 'tribe_events_views_v2_manager_view_label_domain', [ $this, 'filter_view_label_domain'], 10, 3 );
 		add_filter( 'tribe_customizer_inline_stylesheets', [ $this, 'customizer_inline_stylesheets' ], 12 );
 		add_filter( 'tribe_events_views_v2_view_map_template_vars', [ $this, 'filter_map_view_pin' ], 10, 2 );
 
 		add_filter( 'tec_events_default_view', [ $this, 'filter_tec_events_default_view' ], 10, 2 );
+		add_filter( 'query_vars', [ $this, 'filter_include_query_vars' ] );
+
+		add_filter( 'tribe_is_by_date', [ $this, 'filter_tribe_is_by_date' ], 10, 2 );
 	}
 
 	/**
@@ -190,6 +194,39 @@ class Hooks extends \tad_DI52_ServiceProvider {
 		$views['map']       = Map_View::class;
 
 		return $views;
+	}
+
+	/**
+	 * Adds Week View to the list of date-based views.
+	 *
+	 * @since 6.0.2
+	 *
+	 * @param bool $is_by_date Is the current view a by-date-view?
+	 *
+	 * @return bool
+	 */
+	public function filter_tribe_is_by_date( $is_by_date, $context ): bool {
+		$week_slug = tribe( Week_View::class )->get_slug();
+
+		if ( $week_slug === $context->get( 'view' ) ) {
+			return true;
+		}
+
+		return (bool) $is_by_date;
+	}
+
+	/**
+	 * Register the new variable available on the permalink structure
+	 *
+	 * @since 6.0.0
+	 *
+	 * @param $vars array An array with the query variables
+	 *
+	 * @return array
+	 */
+	public function filter_include_query_vars( array $vars ) : array {
+		$vars[] = 'tribe_recurrence_list';
+		return $vars;
 	}
 
 	/**
@@ -785,6 +822,13 @@ class Hooks extends \tad_DI52_ServiceProvider {
 		return $this->container->make( Rewrite::class )->filter_events_rewrite_rules_custom( $rewrite_rules );
 	}
 
+	/**
+	 * This function used to pass the domain to code in common for translations.
+	 * That doesn't work properly, so we've deprecated this, it's now handled in the View classes.
+	 *
+	 * @since 5.1.0
+	 * @deprecated 6.0.3 This is no longer necessary. Handled in the View classes themselves.
+	 */
 	public function filter_view_label_domain( $domain, $slug, $view_class ) {
 		if (
 			'photo' !== $slug
@@ -796,6 +840,46 @@ class Hooks extends \tad_DI52_ServiceProvider {
 		}
 
 		return  'tribe-events-calendar-pro';
+	}
+
+	/**
+	 * Filters the Today button label to change the text to something appropriate for Week View.
+	 *
+	 * @since 6.0.2
+	 *
+	 * @param string $today The string used for the "Today" button on calendar views.
+	 * @param \Tribe\Events\Views\V2\View_Interface $view The View currently rendering.
+	 *
+	 * @return string $today
+	 */
+	public function filter_tec_events_view_week_today_button_label( $today, $view ) {
+		$today = esc_html_x(
+			'This Week',
+			'The default text label for the "today" button on the Week View.',
+			'tribe-events-calendar-pro'
+		);
+
+		return $today;
+	}
+
+	/**
+	 * Filters the Today button title and aria-label to change the text to something appropriate for Week View.
+	 *
+	 * @since 6.0.2
+	 *
+	 * @param string                                $label The title string.
+	 * @param \Tribe\Events\Views\V2\View_Interface $view  The View currently rendering.
+	 *
+	 * @return string $label
+	 */
+	public function filter_tec_events_view_week_today_button_title( $label, $view ) {
+		$label = esc_html_x(
+			'Click to select the current week',
+			"The default text for the 'today' button's title and aria-label on the Week View.",
+			'tribe-events-calendar-pro'
+		);
+
+		return $label;
 	}
 
 	/**

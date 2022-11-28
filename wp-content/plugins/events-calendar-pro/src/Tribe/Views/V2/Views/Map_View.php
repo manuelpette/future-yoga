@@ -54,9 +54,28 @@ class Map_View extends View {
 	 * {@inheritDoc}
 	 */
 	public function __construct( Messages $messages = null ) {
-		parent::__construct($messages);
+		parent::__construct( $messages );
 		$this->rewrite = tribe( 'events.rewrite' );
 	}
+
+	/**
+	 * Default untranslated value for the label of this view.
+	 *
+	 * @since 6.0.3
+	 *
+	 * @var string
+	 */
+	protected static $label = 'Map';
+
+	/**
+	 * @inheritDoc
+	 */
+	public static function get_view_label(): string {
+		static::$label = _x( 'Map', 'The text label for the Map View.', 'tribe-events-calendar-pro' );
+
+		return static::filter_view_label( static::$label );
+	}
+
 
 	/**
 	 * {@inheritDoc}

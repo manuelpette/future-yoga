@@ -199,9 +199,9 @@ class All_View extends List_View {
 	 * @since 4.7.9
 	 *
 	 * @param array $breadcrumbs The breadcrumbs array.
-	 * @param array $view        The instance of the view being rendered.
+	 * @param View $view         The instance of the view being rendered.
 	 *
-	 * @return array The filtered breadcrums
+	 * @return array The filtered breadcrumbs.
 	 *
 	 * @see \Tribe\Events\Views\V2\View::get_breadcrumbs() for where this code is applying.
 	 */
@@ -223,7 +223,7 @@ class All_View extends List_View {
 	/**
 	 * Overrides the base method to ensure that, to show ALL occurrences
 	 * of a Recurring Event, the `hide_subsequent_recurrences` repository
-	 * argsument will always be false.
+	 * argument will always be false.
 	 *
 	 * @since 5.6.0
 	 *

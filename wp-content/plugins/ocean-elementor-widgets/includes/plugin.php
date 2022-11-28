@@ -102,6 +102,11 @@ class owpElementorPlugin {
 			'pricing-menu',
 			'news-bar',
 			'clipboard',
+			'magazine-hero',
+			'magazine-hero-grid',
+			'magazine-grid-simple',
+			'magazine-grid',
+			'magazine-list',
 		);
 		add_action( 'wp_ajax_nopriv_oewe_lf_process_login', [$this, 'login_widget_callback'] );
 	}
@@ -112,13 +117,14 @@ class owpElementorPlugin {
 		$info = array();
 		$info['user_login'] = $_POST['username'];
 		$info['user_password'] = $_POST['password'];
+		$info['redirect_to'] = $_POST['redirect_to'];
 		$info['remember'] = isset( $_POST['remember'] ) ? true : false;
-	
+
 		$user_signon = wp_signon( $info, false );
 		if ( is_wp_error( $user_signon ) ){
 			wp_send_json_error( __('Incorrect login or password!'));
 		} else {
-			wp_send_json_success( array( 'loggedin' => true, 'redirect_url' => home_url( 'login-form' ), 'message' => __('Logged in successfully! Redirecting...' ) ) );
+			wp_send_json_success( array( 'loggedin' => true, 'redirect_url' => home_url( $info['redirect_to'] ), 'message' => __('Logged in successfully! Redirecting...' ) ) );
 		}
 	}
 
@@ -626,6 +632,13 @@ class owpElementorPlugin {
 				'empty_username' => 'Username is required',
 				'empty_password' => 'Password is required'
 			)
+		);
+		wp_register_script(
+			'oew-woo-cart-icon',
+			plugins_url( '/assets/js/woo-cart-icon.js', OWP_ELEMENTOR__FILE__ ),
+			array( 'elementor-frontend' ),
+			false,
+			true
 		);
 	}
 

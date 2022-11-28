@@ -40,6 +40,10 @@ class Woo_CartIcon extends Widget_Base {
         ];
     }
 
+	public function get_script_depends() {
+		return array( 'oew-woo-cart-icon' );
+	}
+
 	public function get_style_depends() {
 		return [ 'oew-woo-cart-icon' ];
 	}

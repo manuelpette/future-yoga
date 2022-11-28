@@ -4,14 +4,13 @@ Tags: migration, backup, duplicate, move, migrate, restore, transfer, clone, aut
 Requires at least: 4.0
 Tested up to: 6.0
 Requires PHP: 5.3.8
-Stable tag: 1.4.6
+Stable tag: 1.5.0
 License: GPLv2
-
 WordPress migration and backups are much easier with Duplicator! Clone, backup, move and transfer an entire site from one location to another.
 
 == Description ==
 
-> With over **25 million downloads** Duplicator successfully gives WordPress users the ability to migrate, copy, move or clone a site from one location to another and also serves as a simple backup utility. Duplicator handles serialized and base64 serialized replacements.  Standard WordPress migration and WordPress backups are easily handled by this plugin as are **zero downtime migrations**.
+> With over **30 million downloads** Duplicator successfully gives WordPress users the ability to migrate, copy, move or clone a site from one location to another and also serves as a simple backup utility. Duplicator handles serialized and base64 serialized replacements.  Standard WordPress migration and WordPress backups are easily handled by this plugin as are **zero downtime migrations**.
 
 For complete details visit [snapcreek.com](https://snapcreek.com/duplicator/?utm_source=duplicator_free&utm_medium=wp_org&utm_content=desc_details&utm_campaign=duplicator_free).
 
@@ -30,7 +29,7 @@ Duplicator is the most powerful migrator available. It enables you to:
 * Perform a full WordPress migration without struggling with messy import/export sql scripts
 
 = Migrate WordPress and Run WordPress Backups =
-Duplicator creates a package that bundles all the site's plugins, themes, content, database and WordPress files into a simple zip file called a package. This package can then be used to easily migrate a WordPress site to any location you wish.  Move on the same server, across servers and pretty much any location a WordPress site can be hosted.  *WordPress is not required for installation* since the package contains all site files.
+Duplicator creates a package that bundles all the site's plugins, themes, content, database and WordPress files into a simple zip file called a package. This package can then be used to easily migrate a WordPress site to any location of your choice.  Move on the same server, across servers and pretty much any location a WordPress site can be hosted.  *WordPress is not required for installation* since the package contains all site files.
 
 = Improve Your Workflow with Pre-Bundled Sites =
 Duplicator lets you make your own preconfigured sites to eliminate rework.  Instead of manually configuring your favorite theme, set of plugins or content over and over, now just configure a single site and bundle it up into a Duplicator package. Once you have the bundled site, you can migrate the WordPress site over and over to different locations to instantly create many preconfigured sites!
@@ -49,6 +48,7 @@ Duplicator Pro takes Duplicator to the next level with features you'll really ap
 * Install a multisite subsite as a new standalone website
 * Database and user creation *in the installer* with cPanel API
 * Connect to cPanel directly from installer
+* Custom plugin hooks for developers
 * Email notifications
 * Professional support
 * ... and much more!
@@ -62,7 +62,6 @@ The underlying logic to backup WordPress, move WordPress and transfer WordPress 
 This plugin does require some technical knowledge.  If you plan to migrate WordPress or backup WordPress please use it at your own risk and don't forget to back up your files and databases beforehand. If you need to move or backup WordPress and would like additional help please visit the Duplicator [resources section](https://snapcreek.com/duplicator/docs/faqs-tech?utm_source=duplicator_free&utm_medium=wp_org&utm_content=free_disclaimer&utm_campaign=duplicator_free#faq-resource-030-q) .
 
 = Active Contributors =
-<li>[Prashant Baldha](https://profiles.wordpress.org/pmbaldha/) (Development)</li>
 <li>[Andrea Leoni](https://profiles.wordpress.org/andreamk/) (Development)</li>
 <li>[Paal Joachim Romdahl](http://www.easywebdesigntutorials.com) (Training)</li>
 <li>[Hans-M. Herbrand](http://www.web266.de) (German) </li>

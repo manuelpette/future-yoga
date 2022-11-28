@@ -613,6 +613,19 @@ class Event_Calendar extends Widget_Base
 		    ]
 	    );
 
+        $this->add_control(
+            'eael_event_limit',
+            [
+                'label' => __('Event Limit', 'essential-addons-for-elementor-lite'),
+                'type' => Controls_Manager::NUMBER,
+                'default' => '3',
+                'min' => '2',
+                'description' => __('Limit the number of events displayed on a day. The rest will show up in a popover.', 'essential-addons-for-elementor-lite'),
+            ]
+        );
+
+
+
         if (apply_filters('eael/is_plugin_active', 'eventON/eventon.php') && apply_filters('eael/pro_enabled', false)) {
             $this->add_control(
                 'eael_event_on_featured_color',
@@ -1875,6 +1888,7 @@ class Event_Calendar extends Widget_Base
         $default_view = $settings['eael_event_calendar_default_view'];
         $default_date = $settings['eael_event_calendar_default_date'];
         $time_format = $settings['eael_event_time_format'];
+        $event_limit = ! empty( $settings['eael_event_limit'] ) ? intval( $settings['eael_event_limit'] ) : 2;
         $translate_date = [
             'today' => __('Today', 'essential-addons-for-elementor-lite'),
             'tomorrow' => __('Tomorrow', 'essential-addons-for-elementor-lite'),
@@ -1889,6 +1903,7 @@ class Event_Calendar extends Widget_Base
             data-defaultview = "' . $default_view . '"
             data-defaultdate = "' . $default_date . '"
             data-time_format = "' . $time_format . '"
+            data-event_limit = "' . $event_limit . '"
             data-events="' . htmlspecialchars(json_encode($data), ENT_QUOTES, 'UTF-8') . '"
             data-first_day="' . $settings['eael_event_calendar_first_day'] . '"></div>
             ' . $this->eaelec_load_event_details() . '
@@ -2032,15 +2047,15 @@ class Event_Calendar extends Widget_Base
             unset($arg['calendar_id']);
         }
 
-        if (empty($data)) {
-            $data = wp_remote_retrieve_body(wp_remote_get(add_query_arg($arg, $base_url)));
-            $check_error = json_decode($data);
+	    if ( empty( $data ) ) {
+		    $data        = wp_remote_retrieve_body( wp_remote_get( esc_url_raw( add_query_arg( $arg, $base_url ) ) ) );
+		    $check_error = json_decode( $data );
 
-	        if(!empty($check_error->error)){
-	        	return [];
-	        }
-            set_transient($transient_key, $data, $settings['eael_event_calendar_data_cache_limit'] * MINUTE_IN_SECONDS);
-        }
+		    if ( ! empty( $check_error->error ) ) {
+			    return [];
+		    }
+		    set_transient( $transient_key, $data, $settings['eael_event_calendar_data_cache_limit'] * MINUTE_IN_SECONDS );
+	    }
 
 	    $calendar_data = [];
         $data = json_decode($data);
@@ -2093,7 +2108,7 @@ class Event_Calendar extends Widget_Base
                     'borderColor' => !empty($settings_eael_event_global_popup_ribbon_color) ? $settings_eael_event_global_popup_ribbon_color : '#10ecab',
                     'textColor' => $settings_eael_event_global_text_color,
                     'color' => $settings_eael_event_global_bg_color,
-                    'url' => ($settings['eael_event_details_link_hide'] !== 'yes') ? $item->htmlLink : '',
+                    'url' => ($settings['eael_event_details_link_hide'] !== 'yes') ? esc_url( $item->htmlLink ) : '',
                     'allDay' => $all_day,
                     'external' => 'on',
                     'nofollow' => 'on',
@@ -2189,7 +2204,7 @@ class Event_Calendar extends Widget_Base
                 'borderColor' => !empty($settings_eael_event_global_popup_ribbon_color) ? $settings_eael_event_global_popup_ribbon_color : '#10ecab',
                 'textColor' => $settings_eael_event_global_text_color,
                 'color' => $settings_eael_event_global_bg_color,
-                'url' => ($settings['eael_event_details_link_hide'] !== 'yes') ? get_the_permalink($event->ID) : '',
+                'url' => ($settings['eael_event_details_link_hide'] !== 'yes') ? esc_url( get_the_permalink($event->ID) ) : '',
                 'allDay' => $all_day,
                 'external' => 'on',
                 'nofollow' => 'on',

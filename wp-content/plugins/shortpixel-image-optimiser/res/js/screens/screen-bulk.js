@@ -55,6 +55,8 @@ var ShortPixelScreen = function (MainScreen, processor)
       if (isPreparing)
       {
         this.SwitchPanel('selection');
+				this.UpdatePanelStatus('loading', 'selection');
+				this.PrepareBulk();
       }
       else if (isRunning)
       {
@@ -121,20 +123,23 @@ console.log("Screen Init Done", initMedia, initCustom);
 				  var eventName = (action.getAttribute('data-event')) ? action.getAttribute('data-event') : 'click';
 
 					action.addEventListener(eventName, self.DoActionEvent.bind(self));
+					/*
+					This is off, since I can't find any clue that children don't get triggered, but it does create double events when added.
 					if (action.children.length > 0)
 					{
 						 for(var i = 0; i < action.children.length; i++)
 						 {
-							  action.children[i].addEventListener(eventName, self.DoActionEvent.bind(self));
+							 // action.children[i].addEventListener(eventName, self.DoActionEvent.bind(self));
 						 }
 					}
+					*/
       });
-  },
+  }
+
 	this.DoActionEvent = function(event)
 	{
 		var element = event.target;
-		event.preventDefault();
-		event.stopPropagation();
+		var action = element.getAttribute('data-action');
 
 		// Might be the child
 		if (element.getAttribute('data-action') == null)
@@ -148,7 +153,6 @@ console.log("Screen Init Done", initMedia, initCustom);
 		var actionName = element.getAttribute('data-action');
 		var isPanelAction = (actionName == 'open-panel');
 
-
 		if (isPanelAction)
 		{
 			 var doPanel = element.getAttribute('data-panel');
@@ -161,7 +165,6 @@ console.log("Screen Init Done", initMedia, initCustom);
 						this[actionName].call(this,event);
 				}
 		}
-
 	}
 
   this.UpdatePanelStatus = function(status, panelName)
@@ -258,8 +261,6 @@ console.log("Screen Init Done", initMedia, initCustom);
 		 if (document.getElementById('thumbnails_checkbox') !== null)
 		 		data.thumbsActive = (document.getElementById('thumbnails_checkbox').checked) ? true : false;
 
-
-     //this.SwitchPanel('selection');
      this.UpdatePanelStatus('loading', 'selection');
 
      // Prepare should happen after selecting what the optimize.
@@ -274,13 +275,15 @@ console.log("Screen Init Done", initMedia, initCustom);
 
 
       this.processor.SetInterval(200); // do this faster.
-      // Show stats
+      // CheckActive. Both Resume and Run call to processor process run.
       if (! this.processor.CheckActive())
       {
          this.processor.ResumeProcess();
-        //this.processor.isManualPaused = false; // force run
       }
-      this.processor.RunProcess();
+			else
+			{
+				this.processor.RunProcess();
+			}
       return false;
 
       // Run process.run process from now for prepare ( until prepare done? )
@@ -290,9 +293,10 @@ console.log("Screen Init Done", initMedia, initCustom);
       if (qStatus == 'PREPARING_DONE' || qStatus == 'PREPARING_RECOUNT')
       {
           console.log('Queue status: preparing done');
-          this.UpdatePanelStatus('loaded', 'selection');
+
           this.SwitchPanel('summary');
-          this.processor.SetInterval(-1); // back to default.
+ 					this.UpdatePanelStatus('loaded', 'selection');
+				  this.processor.SetInterval(-1); // back to default.
 
       }
       if (qStatus == 'QUEUE_EMPTY')
@@ -421,8 +425,7 @@ console.log("Screen Init Done", initMedia, initCustom);
 			 preview.querySelector('.new.preview-image .image.source img').src = originalSrc;
 		}
 		else {
-			 preview.querySelector('.new.preview-image .image.source img').src = placeHolder;
-			 preview.querySelector('.new.preview-image .image.source img').classList.add('notempty');
+			preview.querySelector('.new.preview-image .image.source').style.display = 'none';
 		}
 
 		if (optimizedSrc)
@@ -430,7 +433,9 @@ console.log("Screen Init Done", initMedia, initCustom);
 			 preview.querySelector('.new.preview-image .image.result img').src = optimizedSrc;
 		}
 		else {
-			 preview.querySelector('.new.preview-image .image.result').style.display = 'none';
+			 preview.querySelector('.new.preview-image .image.result img').src = placeHolder;
+			 preview.querySelector('.new.preview-image .image.result img').classList.add('notempty');
+
 		}
 //		currentItem.classList.add('slideleft');
 		currentItem.style.marginLeft = '-' + offset + 'px';
@@ -579,7 +584,11 @@ console.log("Screen Init Done", initMedia, initCustom);
                 else
                 {
                   if (value !== false)
-                    element.textContent = value;
+									{
+
+										element.textContent = value;
+
+									}
                 }
 
           });
@@ -615,9 +624,9 @@ console.log("Screen Init Done", initMedia, initCustom);
 			 }
 
 			 var error = this.processor.aStatusError[result.error];
-
 			 if (error == 'NOQUOTA')
 			 {
+
 						 this.ToggleOverQuotaNotice(true);
 			 }
 
@@ -817,7 +826,7 @@ console.log("Screen Init Done", initMedia, initCustom);
       {
 
           var control = element.getAttribute('data-control');
-          var hasCompareControl = element.hasAttribute('data-control-check');
+              var hasCompareControl = element.hasAttribute('data-control-check');
 
 
           var checker = document.querySelector('[' + control + ']');
@@ -825,7 +834,7 @@ console.log("Screen Init Done", initMedia, initCustom);
           // basic check if value > 0
           if (checker == null)
           {
-            console.error('Control named ' + control + ' on ' + element.innerHTML + ' didn\'t find reference value element ');
+            console.log('Control named ' + control + ' on ' + element.innerHTML + ' didn\'t find reference value element ');
             return;
           }
 
@@ -833,8 +842,9 @@ console.log("Screen Init Done", initMedia, initCustom);
           if ( hasCompareControl)
           {
             var compareControl = document.querySelector('[' + element.getAttribute('data-control-check') + ']');
-            var compareValue = parseInt(compareControl.innerHTML);
-
+            if (compareControl !== null) {
+                var compareValue = parseInt(compareControl.innerHTML);
+            }
           }
           if (isNaN(value))
           {
@@ -936,9 +946,6 @@ console.log("Screen Init Done", initMedia, initCustom);
 		}
     var data = {screen_action: 'startRestoreAll', callback: 'shortpixel.startRestoreAll', queues: queues}; //
 
-    this.SwitchPanel('selection');
-    this.UpdatePanelStatus('loading', 'selection');
-
     // Prepare should happen after selecting what the optimize.
     window.addEventListener('shortpixel.startRestoreAll', this.PrepareBulk.bind(this), {'once': true} );
     window.addEventListener('shortpixel.bulk.onSwitchPanel', this.StartBulk.bind(this), {'once': true});
@@ -947,11 +954,9 @@ console.log("Screen Init Done", initMedia, initCustom);
 
   this.BulkMigrateAll = function (event)
   {
-    console.log('Start Migrate All');
     var data = {screen_action: 'startMigrateAll', callback: 'shortpixel.startMigrateAll'}; //
 
 		this.UpdatePanelStatus('loading', 'selection');
-
 		this.SwitchPanel('selection');
 
   	//this.SwitchPanel('process');
@@ -963,7 +968,7 @@ console.log("Screen Init Done", initMedia, initCustom);
   }
 	this.BulkRemoveLegacy = function (event)
   {
-    console.log('Start Remove Legacy');
+
     var data = {screen_action: 'startRemoveLegacy', callback: 'shortpixel.startRemoveLegacy'}; //
 
     this.SwitchPanel('selection');
@@ -975,6 +980,15 @@ console.log("Screen Init Done", initMedia, initCustom);
     window.addEventListener('shortpixel.bulk.onSwitchPanel', this.StartBulk.bind(this), {'once': true});
     this.processor.AjaxRequest(data);
   }
+	this.StartBulkOperation = function (event)
+	{
+		this.PrepareBulk();
+
+		this.UpdatePanelStatus('loading', 'selection');
+		this.SwitchPanel('selection');
+
+
+	}
 
 
 	// Opening of Log files on the dashboard

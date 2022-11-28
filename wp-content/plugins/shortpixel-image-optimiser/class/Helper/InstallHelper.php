@@ -8,6 +8,8 @@ use ShortPixel\Controller\FileSystemController as FileSystemController;
 use ShortPixel\Controller\AdminNoticesController as AdminNoticesController;
 use ShortPixel\Controller\StatsController as StatsController;
 use ShortPixel\Controller\ApiKeyController as ApiKeyController;
+use ShortPixel\Helper\UtilHelper as UtilHelper;
+
 
 class InstallHelper
 {
@@ -21,15 +23,13 @@ class InstallHelper
       $env = wpSPIO()->env();
 
       if(\WPShortPixelSettings::getOpt('deliverWebp') == 3 && ! $env->is_nginx) {
-          \ShortPixelTools::alterHtaccess(true,true); //add the htaccess lines
+          UtilHelper::alterHtaccess(true,true); //add the htaccess lines
       }
 
       self::checkTables();
 
       AdminNoticesController::resetAllNotices();
       \WPShortPixelSettings::onActivate();
-      OptimizeController::resetQueues();
-
 
 			$settings->currentVersion = SHORTPIXEL_IMAGE_OPTIMISER_VERSION;
   }
@@ -44,7 +44,7 @@ class InstallHelper
 
     if (! $env->is_nginx)
 		{
-      \ShortPixelTools::alterHtaccess(false, false);
+      UtilHelper::alterHtaccess(false, false);
 		}
 
     // save remove.
@@ -69,7 +69,6 @@ class InstallHelper
  //   $env = \wpSPIO()->env();
 
     OptimizeController::uninstallPlugin();
-    BulkController::uninstallPlugin();
 		ApiKeyController::uninstallPlugin();
   }
 
@@ -79,7 +78,8 @@ class InstallHelper
 		$env = \wpSPIO()->env();
 		$settings = \wpSPIO()->settings();
 
-		$nonce = $_POST['tools-nonce'];
+
+		$nonce = (isset($_POST['tools-nonce'])) ? sanitize_key($_POST['tools-nonce']) : null;
 		if ( ! wp_verify_nonce( $nonce, 'remove-all' ) ) {
           wp_nonce_ays( '' );
     }
@@ -87,6 +87,8 @@ class InstallHelper
 		self::deactivatePlugin(); // deactivate
 		self::uninstallPlugin(); // uninstall
 
+		// Bulk Log
+		BulkController::uninstallPlugin();
 
 		$settings::resetOptions();
 
@@ -107,16 +109,16 @@ class InstallHelper
 
   public static function deactivateConflictingPlugin()
   {
-    if ( ! wp_verify_nonce( $_GET['_wpnonce'], 'sp_deactivate_plugin_nonce' ) ) {
+    if ( ! isset($_GET['_wpnonce']) || ! wp_verify_nonce( sanitize_key($_GET['_wpnonce']), 'sp_deactivate_plugin_nonce' ) ) {
           wp_nonce_ays( 'Nononce' );
     }
 
     $referrer_url = wp_get_referer();
-    $conflict = \ShortPixelTools::getConflictingPlugins();
     $url = wp_get_referer();
-		$plugin = sanitize_text_field($_GET['plugin']); // our target.
+		$plugin = (isset($_GET['plugin'])) ? sanitize_text_field(wp_unslash($_GET['plugin'])) : null; // our target.
 
-	  deactivate_plugins($plugin);
+		if (! is_null($plugin))
+	  	deactivate_plugins($plugin);
 
     wp_safe_redirect($url);
     die();
@@ -151,18 +153,13 @@ class InstallHelper
 			global $wpdb;
     	require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
 
-			if (self::checkTableExists('shortpixel_folders') === false)
-	    {
-					dbDelta(self::getFolderTableSQL());
-			}
-			if (self::checkTableExists('shortpixel_meta') === false)
-			{
-	 	    	dbDelta(self::getMetaTableSQL());
-			}
-			if (self::checkTableExists('shortpixel_postmeta') === false)
-			{
-					dbDelta(self::getPostMetaSQL());
-			}
+
+			dbDelta(self::getFolderTableSQL());
+
+	    	dbDelta(self::getMetaTableSQL());
+
+			dbDelta(self::getPostMetaSQL());
+
 
 			self::checkIndexes();
 	}
@@ -274,6 +271,7 @@ class InstallHelper
           message varchar(255),
           ts_added timestamp,
           ts_optimized timestamp,
+					extra_info LONGTEXT,
           PRIMARY KEY sp_id (id)
         ) $charsetCollate;";
 
@@ -290,7 +288,7 @@ class InstallHelper
 			 attach_id bigint unsigned NOT NULL,
 			 parent bigint unsigned NOT NULL,
 			 image_type tinyint default 0,
-			 size varchar(50),
+			 size varchar(200),
 			 status tinyint default 0,
 			 compression_type tinyint,
 			 compressed_size  int,

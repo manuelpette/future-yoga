@@ -1,46 +1,5 @@
-/*! elementor-pro - v3.7.2 - 15-06-2022 */
+/*! elementor-pro - v3.8.0 - 30-10-2022 */
 (self["webpackChunkelementor_pro"] = self["webpackChunkelementor_pro"] || []).push([["frontend"],{
-
-/***/ "../node_modules/@babel/runtime/helpers/defineProperty.js":
-/*!****************************************************************!*\
-  !*** ../node_modules/@babel/runtime/helpers/defineProperty.js ***!
-  \****************************************************************/
-/***/ ((module) => {
-
-function _defineProperty(obj, key, value) {
-  if (key in obj) {
-    Object.defineProperty(obj, key, {
-      value: value,
-      enumerable: true,
-      configurable: true,
-      writable: true
-    });
-  } else {
-    obj[key] = value;
-  }
-
-  return obj;
-}
-
-module.exports = _defineProperty, module.exports.__esModule = true, module.exports["default"] = module.exports;
-
-/***/ }),
-
-/***/ "../node_modules/@babel/runtime/helpers/interopRequireDefault.js":
-/*!***********************************************************************!*\
-  !*** ../node_modules/@babel/runtime/helpers/interopRequireDefault.js ***!
-  \***********************************************************************/
-/***/ ((module) => {
-
-function _interopRequireDefault(obj) {
-  return obj && obj.__esModule ? obj : {
-    "default": obj
-  };
-}
-
-module.exports = _interopRequireDefault, module.exports.__esModule = true, module.exports["default"] = module.exports;
-
-/***/ }),
 
 /***/ "../assets/dev/js/frontend/frontend.js":
 /*!*********************************************!*\
@@ -1321,16 +1280,31 @@ var _default = elementorModules.frontend.handlers.Base.extend({
         stickyActive: 'elementor-sticky--active elementor-section--handles-inside',
         stickyEffects: 'elementor-sticky--effects',
         spacer: 'elementor-sticky__spacer'
-      }
+      },
+      isRTL: elementorFrontend.config.is_rtl,
+      // In edit mode, since the preview is an iframe, the scrollbar is on the left. The scrollbar width is
+      // compensated for in this case.
+      handleScrollbarWidth: elementorFrontend.isEditMode()
     },
-          $wpAdminBar = elementorFrontend.elements.$wpAdminBar;
-
-    if (elementSettings.sticky_parent) {
-      stickyOptions.parent = '.e-container, .elementor-widget-wrap';
-    }
+          $wpAdminBar = elementorFrontend.elements.$wpAdminBar,
+          hasParentContainer = this.isContainerElement(this.$element[0].parentElement),
+          isNestedContainer = this.isContainerElement(this.$element[0]) && hasParentContainer,
+          isWidget = this.$element[0].classList.contains('elementor-widget');
 
     if ($wpAdminBar.length && 'top' === elementSettings.sticky && 'fixed' === $wpAdminBar.css('position')) {
       stickyOptions.offset += $wpAdminBar.height();
+    }
+
+    if (hasParentContainer) {
+      stickyOptions.relativeTarget = 'document';
+    } else {
+      stickyOptions.relativeTarget = 'parent';
+    } // The `stickyOptions.parent` value should only be applied to inner elements, and not to top level containers.
+
+
+    if (elementSettings.sticky_parent && (isNestedContainer || isWidget)) {
+      // TODO: The e-container classes should be removed in the next update.
+      stickyOptions.parent = '.e-container, .e-container__inner, .e-con, .e-con-inner, .elementor-widget-wrap';
     }
 
     return stickyOptions;
@@ -1433,6 +1407,19 @@ var _default = elementorModules.frontend.handlers.Base.extend({
   onDestroy() {
     elementorModules.frontend.handlers.Base.prototype.onDestroy.apply(this, arguments);
     this.deactivate();
+  },
+
+  /**
+   *
+   * @param {HTMLElement|null|undefined} element
+   * @return {boolean} Is the passed element a container.
+   */
+  isContainerElement(element) {
+    const containerClasses = [// TODO: The e-container classes should be removed in the next update.
+    'e-container', 'e-container__inner', 'e-con', 'e-con-inner'];
+    return containerClasses.some(containerClass => {
+      return element?.classList.contains(containerClass);
+    });
   }
 
 });
@@ -1474,6 +1461,47 @@ class _default extends elementorModules.Module {
 }
 
 exports["default"] = _default;
+
+/***/ }),
+
+/***/ "../node_modules/@babel/runtime/helpers/defineProperty.js":
+/*!****************************************************************!*\
+  !*** ../node_modules/@babel/runtime/helpers/defineProperty.js ***!
+  \****************************************************************/
+/***/ ((module) => {
+
+function _defineProperty(obj, key, value) {
+  if (key in obj) {
+    Object.defineProperty(obj, key, {
+      value: value,
+      enumerable: true,
+      configurable: true,
+      writable: true
+    });
+  } else {
+    obj[key] = value;
+  }
+
+  return obj;
+}
+
+module.exports = _defineProperty, module.exports.__esModule = true, module.exports["default"] = module.exports;
+
+/***/ }),
+
+/***/ "../node_modules/@babel/runtime/helpers/interopRequireDefault.js":
+/*!***********************************************************************!*\
+  !*** ../node_modules/@babel/runtime/helpers/interopRequireDefault.js ***!
+  \***********************************************************************/
+/***/ ((module) => {
+
+function _interopRequireDefault(obj) {
+  return obj && obj.__esModule ? obj : {
+    "default": obj
+  };
+}
+
+module.exports = _interopRequireDefault, module.exports.__esModule = true, module.exports["default"] = module.exports;
 
 /***/ })
 

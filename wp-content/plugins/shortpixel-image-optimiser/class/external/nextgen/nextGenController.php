@@ -45,6 +45,7 @@ class NextGenController
       add_filter( 'ngg_manage_images_number_of_columns', array( $this->view, 'nggCountColumns' ) );
       add_filter( 'ngg_manage_images_column_7_header', array( $this->view, 'nggColumnHeader' ) );
       add_filter( 'ngg_manage_images_column_7_content', array( $this, 'loadNextGenItem' ), 10,2 );
+			add_filter('ngg_manage_gallery_fields', array($this, 'refreshFolderOnLoad'), 10, 2);
 
     }
 
@@ -86,10 +87,17 @@ class NextGenController
   public function isNextGenScreen()
   {
       $screens = $this->add_screen_loads(array());
+			if (! is_admin())
+			{
+				 return false;
+			}
+			if (! function_exists('get_current_screen'))
+			{
+				 return false;
+			}
+			$screen_id = \wpSPIO()->env()->screen_id;
 
-      $screen = get_current_screen();
-
-      if (in_array($screen->id, $screens))
+      if (in_array($screen_id, $screens))
         return true;
       else
         return false;
@@ -108,10 +116,9 @@ class NextGenController
   {
 
     $use_screens[] = 'toplevel_page_nextgen-gallery'; // toplevel
-    $use_screens[] = 'gallery_page_ngg_addgallery';  // add gallery
-    $use_screens[] = 'nggallery-manage-gallery'; // manage gallery - might be old
+    $use_screens[] = 'nextgen-gallery_page_ngg_addgallery';  // add gallery
+    $use_screens[] = 'nextgen-gallery_page_nggallery-manage-album'; // manage album
     $use_screens[] = 'nextgen-gallery_page_nggallery-manage-gallery'; // manage toplevel gallery
-    $use_screens[] = 'gallery_page_nggallery-manage-album'; // manage album
     $use_screens[] = 'nggallery-manage-images'; // images in gallery overview
 
     return $use_screens;
@@ -122,6 +129,19 @@ class NextGenController
        $viewController = new NextGenViewController();
        $viewController->loadItem($picture);
   }
+
+	public function refreshFolderOnLoad($array, $gallery)
+	{
+		 $galleries = $this->getGalleries($gallery->gid);
+		 if (isset($galleries[0]))
+		 {
+			  $otherMedia = OtherMediaController::getInstance();
+			  $galleryFolder = $galleries[0];
+				$folder = $otherMedia->getFolderByPath($galleryFolder->getPath());
+				$folder->refreshFolder(true);
+		 }
+		 return $array;
+	}
   /** Enables nextGen, add galleries to custom folders
   * @param boolean $silent Throw a notice or not. This seems to be based if nextgen was already activated previously or not.
   */
@@ -182,12 +202,19 @@ class NextGenController
 	}
 
   /* @return DirectoryModel */
-  public function getGalleries()
+  public function getGalleries($id = null)
   {
     global $wpdb;
     $fs = \wpSPIO()->filesystem();
     $homepath = $fs->getWPFileBase();
-    $result = $wpdb->get_results("SELECT path FROM {$wpdb->prefix}ngg_gallery");
+
+		$sql = "SELECT path FROM {$wpdb->prefix}ngg_gallery";
+		if (! is_null($id))
+		{
+			 $sql .= ' WHERE gid = %d';
+			 $sql = $wpdb->prepare($sql, $id);
+		}
+    $result = $wpdb->get_results($sql);
 
     $galleries = array();
 
@@ -263,7 +290,7 @@ class NextGenController
 
     if ($this->optimizeNextGen() === true) {
           $imageFsPath = $this->getImageAbspath($image);
-          $otherMedia->addImage($imageFsPath);
+          $otherMedia->addImage($imageFsPath, array('is_nextgen' => true));
       }
   }
 

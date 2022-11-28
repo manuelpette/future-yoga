@@ -6,7 +6,7 @@ use ShortPixel\Controller\ApiKeyController as ApiKeyController;
 /**
  * User: simon
  * Date: 11.04.2018
- * @todo This whole thing needs redoing. 
+ * @todo This whole thing needs redoing.
  */
 class ShortPixelFeedback {
 
@@ -25,6 +25,7 @@ class ShortPixelFeedback {
 
         // Deactivation
         add_filter( 'plugin_action_links_' . plugin_basename( $this->plugin_file ), array( $this, 'filterActionLinks') );
+				add_filter('network_admin_plugin_action_links_' . plugin_basename( $this->plugin_file ), array( $this, 'filterActionLinks'));
         add_action( 'admin_footer-plugins.php', array( $this, 'goodbyeAjax') );
         add_action( 'wp_ajax_shortpixel_deactivate_plugin', array( $this, 'deactivatePluginCallback') );
 
@@ -37,6 +38,7 @@ class ShortPixelFeedback {
     public function filterActionLinks( $links ) {
 
         if( isset( $links['deactivate'] ) ) {
+
             $deactivation_link = $links['deactivate'];
             // Insert an onClick action to allow form before deactivating
             $deactivation_link = str_replace( '<a ',
@@ -174,12 +176,12 @@ class ShortPixelFeedback {
                     formContainer = $(formID),
                     deactivated = true,
                     detailsStrings = {
-                        'setup' : '<?php echo __( 'What was the dificult part ?', 'shortpixel-image-optimiser') ?>',
-                        'docs' : '<?php echo __( 'What can we describe more ?', 'shortpixel-image-optimiser' ) ?>',
-                        'features' : '<?php echo __( 'How could we improve ?', 'shortpixel-image-optimiser' ) ?>',
-                        'better-plugin' : '<?php echo __( 'Can you mention it ?', 'shortpixel-image-optimiser' ) ?>',
-                        'incompatibility' : '<?php echo __( 'With what plugin or theme is incompatible ?', 'shortpixel-image-optimiser' ) ?>',
-                        'maintenance' : '<?php echo __( 'Please specify', 'shortpixel-image-optimiser') ?>',
+                        'setup' : '<?php esc_html_e( 'What was the dificult part ?', 'shortpixel-image-optimiser') ?>',
+                        'docs' : '<?php esc_html_e( 'What can we describe more ?', 'shortpixel-image-optimiser' ) ?>',
+                        'features' : '<?php esc_html_e( 'How could we improve ?', 'shortpixel-image-optimiser' ) ?>',
+                        'better-plugin' : '<?php esc_html_e( 'Can you mention it ?', 'shortpixel-image-optimiser' ) ?>',
+                        'incompatibility' : '<?php esc_html_e( 'With what plugin or theme is incompatible ?', 'shortpixel-image-optimiser' ) ?>',
+                        'maintenance' : '<?php esc_html_e( 'Please specify', 'shortpixel-image-optimiser') ?>',
 												'temporary' : '',
                     };
 
@@ -188,7 +190,7 @@ class ShortPixelFeedback {
 
                     var SubmitFeedback = function(data, formContainer){
                         data['action']          = 'shortpixel_deactivate_plugin';
-                        data['security']        = '<?php echo wp_create_nonce("shortpixel_deactivate_plugin" ); ?>';
+                        data['security']        = '<?php echo sanitize_key(wp_create_nonce("shortpixel_deactivate_plugin" )); ?>';
                         data['dataType']        = 'json';
                         data['keep-settings']   = formContainer.find('#shortpixel-keep-settings:checked').length;
 
@@ -271,11 +273,11 @@ class ShortPixelFeedback {
 
                     formContainer.on('click', '#shortpixel-deactivate-submit-form', function(e){
                         e.preventDefault();
-                        if( formContainer.find('#shortpixel-keep-settings:checked').length ) {
+                       // if( formContainer.find('#shortpixel-keep-settings:checked').length ) {
                             window.location.href = url;
-                        } else {
+                       /* } else {
                             SubmitFeedback({}, formContainer);
-                        }
+                        } */
                     });
 
                     // If we click outside the form, the form will close
@@ -315,11 +317,6 @@ class ShortPixelFeedback {
 
         check_ajax_referer( 'shortpixel_deactivate_plugin', 'security' );
 
-				$keep_settings = isset($_POST['keep-settings']) ? intval($_POST['keep-settings']) : null;
-
-				if(is_null($keep_settings) === false) {
-            \wpSPIO()->settings()->removeSettingsOnDeletePlugin = 1 - $keep_settings;
-        }
 
 				Log::addDebug('Deactive Plugin Callback POST', $_POST);
 
@@ -328,8 +325,8 @@ class ShortPixelFeedback {
             $anonymous = (intval($_POST['anonymous']) == 1) ? true : false;
             $args = array(
                 'key' =>  $this->key,
-                'reason' => sanitize_text_field($_POST['reason']),
-                'details' => sanitize_text_field($_POST['details']),
+                'reason' => sanitize_text_field(wp_unslash($_POST['reason'])),
+                'details' => sanitize_text_field(wp_unslash($_POST['details'])),
                 'anonymous' => $anonymous
             );
             $request = new ShortPixelPluginRequest( $this->plugin_file, 'http://' . SHORTPIXEL_API . '/v2/feedback.php', $args );

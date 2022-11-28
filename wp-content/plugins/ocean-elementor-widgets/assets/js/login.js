@@ -33,7 +33,7 @@
 				remember 		= theForm.find( 'input[name="rememberme"]' ),
 				redirect 		= theForm.find( 'input[name="redirect_to"]' ),
 				self 			= this;
-		
+
 			username.parent().find( '.oew-lf-error' ).remove();
 			password.parent().find( '.oew-lf-error' ).remove();
 

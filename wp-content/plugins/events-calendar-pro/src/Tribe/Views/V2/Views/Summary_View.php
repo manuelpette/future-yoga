@@ -39,6 +39,24 @@ class Summary_View extends List_View {
 	}
 
 	/**
+	 * Default untranslated value for the label of this view.
+	 *
+	 * @since 6.0.3
+	 *
+	 * @var string
+	 */
+	protected static $label = 'Summary';
+
+	/**
+	 * @inheritDoc
+	 */
+	public static function get_view_label(): string {
+		static::$label = _x( 'Summary', 'The text label for the Summary View.', 'tribe-events-calendar-pro' );
+
+		return static::filter_view_label( static::$label );
+	}
+
+	/**
 	 * Add hooks that are specific to the execution of this view.
 	 *
 	 * @since 5.7.0

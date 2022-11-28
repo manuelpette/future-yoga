@@ -17,6 +17,7 @@ class FileModel extends \ShortPixel\Model
 
   // File info
   protected $fullpath = null;
+	protected $rawfullpath = null;
   protected $filename = null; // filename + extension
   protected $filebase = null; // filename without extension
   protected $directory = null;
@@ -42,6 +43,7 @@ class FileModel extends \ShortPixel\Model
   public function __construct($path)
   {
     $this->fullpath = trim($path);
+		$this->rawfullpath = $this->fullpath;
     $fs = \wpSPIO()->filesystem();
     if ($fs->pathIsUrl($path)) // Asap check for URL's to prevent remote wrappers from running.
     {
@@ -94,7 +96,7 @@ class FileModel extends \ShortPixel\Model
       $this->exists = (@file_exists($this->fullpath) && is_file($this->fullpath));
     }
 
-    $this->exists = apply_filters('shortpixel_image_exists', $this->exists, $this->fullpath, $this);
+    $this->exists = apply_filters('shortpixel_image_exists', $this->exists, $this->fullpath, $this); //legacy
     $this->exists = apply_filters('shortpixel/file/exists',  $this->exists, $this->fullpath, $this);
     return $this->exists;
   }
@@ -382,7 +384,7 @@ class FileModel extends \ShortPixel\Model
 	// So far, testing use for file Filter */
 	public function getRawFullPath()
 	{
-			return $this->fullpath;
+			return $this->rawfullpath;
 	}
 
   public function getFileName()
@@ -415,7 +417,7 @@ class FileModel extends \ShortPixel\Model
     if (is_null($this->mime))
         $this->setFileInfo();
 
-    if ($this->exists())
+    if ($this->exists() && ! $this->is_virtual() )
     {
         $this->mime = wp_get_image_mime($this->fullpath);
     }
@@ -479,18 +481,24 @@ class FileModel extends \ShortPixel\Model
     if ($path === false) // don't process further
       return false;
 
-    $path = wp_normalize_path($path);
+  //  $path = wp_normalize_path($path);
 		$abspath = $fs->getWPAbsPath();
 
     if ( is_file($path) && ! is_dir($path) ) // if path and file exist, all should be okish.
     {
       return $path;
     }
+		// If attempted file does not exist, but the file is in a dir that exists, that is good enough.
+		elseif ( ! is_dir($path) && is_dir(dirname($path)) )
+		{
+			 return $path;
+		}
+		// If path is not in the abspath, it might be relative.
     elseif (strpos($path, $abspath->getPath()) === false)
     {
 	    // if path does not contain basepath.
-	    $uploadDir = $fs->getWPUploadBase();
-	    $abspath = $fs->getWPAbsPath();
+	    //$uploadDir = $fs->getWPUploadBase();
+	    //$abspath = $fs->getWPAbsPath();
 
       $path = $this->relativeToFullPath($path);
     }
@@ -535,8 +543,10 @@ class FileModel extends \ShortPixel\Model
 
      $this->is_virtual = true;
 
+		 // This filter checks if some supplier will be able to handle the file when needed.
      $path = apply_filters('shortpixel/image/urltopath', false, $url);
-     if ($path !== false)
+
+		 if ($path !== false)
      {
           $this->exists = true;
           $this->is_readable = true;
@@ -673,6 +683,7 @@ class FileModel extends \ShortPixel\Model
           'exists' => $this->exists,
           'is_writable' => $this->is_writable,
           'is_readable' => $this->is_readable,
+					'is_virtual' => $this->is_virtual,
        ];
     }
 

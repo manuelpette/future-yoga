@@ -8,12 +8,15 @@ var ShortPixelScreen = function (MainScreen, processor)
     this.processor = processor;
 
     this.currentMessage = '';
+		this.strings = '';
 
 
     this.Init = function()
     {
           window.addEventListener('shortpixel.media.resumeprocessing', this.processor.ResumeProcess.bind(this.processor));
 					window.addEventListener('shortpixel.RenderItemView', this.RenderItemView.bind(this) );
+
+					this.strings = spio_screenStrings;
     }
 
     this.HandleImage = function(resultItem, type)
@@ -106,6 +109,21 @@ var ShortPixelScreen = function (MainScreen, processor)
         this.processor.Debug('Update Message Column not found - ' + id);
        }
     }
+		// Show a message that an action has started.
+		this.SetMessageProcessing = function(id)
+		{
+				var message = this.strings.startAction;
+
+				var loading = document.createElement('img');
+				loading.width = 20;
+				loading.height = 20;
+				loading.src = this.processor.GetPluginUrl() + '/res/img/bulk/loading-hourglass.svg';
+
+
+				message += loading.outerHTML;
+				this.UpdateMessage(id, message);
+		}
+
     this.QueueStatus = function(qStatus)
     {
 /*        if (qStatus == 'QUEUE_EMPTY')
@@ -210,7 +228,8 @@ var ShortPixelScreen = function (MainScreen, processor)
             var id = data.media.id;
 
             var element = document.getElementById('sp-msg-' + id);
-            element.outerHTML = data.media.itemView;
+						if (element !== null) // Could be other page / not visible / whatever.
+            	element.outerHTML = data.media.itemView;
         }
         return false; // callback shouldn't do more, see processor.
     }
@@ -222,9 +241,10 @@ var ShortPixelScreen = function (MainScreen, processor)
         data.id = id;
         data.type = 'media';
         data.screen_action = 'restoreItem';
-        //data.callback = 'this.loadItemView';
         // AjaxRequest should return result, which will go through Handleresponse, then LoadiTemView.
-        this.processor.AjaxRequest(data);
+				this.SetMessageProcessing(id);
+				this.processor.AjaxRequest(data);
+
         //var id = data.id;
     }
     this.ReOptimize = function(id, compression)
@@ -239,8 +259,29 @@ var ShortPixelScreen = function (MainScreen, processor)
 			 if (! this.processor.CheckActive())
 			     data.callback = 'shortpixel.custom.resumeprocessing';
 
+				this.SetMessageProcessing(id);
         this.processor.AjaxRequest(data);
     }
+		this.RedoLegacy = function(id)
+		{
+			var data = {
+				 id: id,
+				 type: 'media',
+				 screen_action: 'redoLegacy',
+			}
+				data.callback = 'shortpixel.LoadItemView';
+
+  		window.addEventListener('shortpixel.LoadItemView', function (e) {
+					var itemData = { id: e.detail.media.id, type: 'media' };
+					this.processor.timesEmpty = 0; // reset the defer on this.
+					this.processor.LoadItemView(itemData);
+					this.UpdateMessage(itemData.id, '');
+
+			}.bind(this), {'once': true} );
+
+			this.SetMessageProcessing(id);
+			this.processor.AjaxRequest(data);
+		}
     this.Optimize = function (id)
     {
 
@@ -253,6 +294,7 @@ var ShortPixelScreen = function (MainScreen, processor)
        if (! this.processor.CheckActive())
          data.callback = 'shortpixel.media.resumeprocessing';
 
+			 this.SetMessageProcessing(id);
        this.processor.AjaxRequest(data);
     }
 

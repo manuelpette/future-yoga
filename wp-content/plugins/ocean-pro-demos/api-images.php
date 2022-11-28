@@ -15,6 +15,8 @@ class Demo_Api_Images {
 
 			add_action( 'wp_enqueue_media', array( $this, 'demo_api_images_wp_media_scripts' ) );
 		}
+
+		require_once DEMO_API_IMAGES_PATH . '/includes/themepanel/theme-panel.php';
 	}
 
 	private function constants() {
@@ -25,7 +27,9 @@ class Demo_Api_Images {
 			define( 'DEMO_API_IMAGES_TITLE', 'Browse Ocean Images' );
 		}
 		if ( ! defined( 'DEMO_API_IMAGES_SERVER_URL' ) ) {
-			define( 'DEMO_API_IMAGES_SERVER_URL', 'https://imgsearch.oceanwp.org/api.php' );
+			$demo_api_images_server = get_option( 'owp_api_images_integration_server', 'main' );
+			$demo_api_images_server_url = $demo_api_images_server === 'main' ? 'https://imgsearch.oceanwp.org/api.php' : 'https://imgtest.oceanwp.org/api.php';
+			define( 'DEMO_API_IMAGES_SERVER_URL', $demo_api_images_server_url );
 		}
 		if ( ! defined( 'DEMO_API_IMAGES_PATH' ) ) {
 			define( 'DEMO_API_IMAGES_PATH', plugin_dir_path( __FILE__ ) );
@@ -34,13 +38,13 @@ class Demo_Api_Images {
 			define( 'DEMO_API_IMAGES_URL', plugins_url( '/', __FILE__ ) );
 		}
 		if ( ! defined( 'DEMO_API_IMAGES_ASSETS_VERSION' ) ) {
-			define( 'DEMO_API_IMAGES_ASSETS_VERSION', time() );
+			define( 'DEMO_API_IMAGES_ASSETS_VERSION', OPD_VERSION );
 		}
 	}
 
 	public function demo_api_images_wp_media_scripts() {
 		global $current_screen;
-		if ( $current_screen->id != 'media_page_demo' && self::demo_api_images_set_has_access() ) {
+		if ( $current_screen->id != 'media_page_ocean-images' && self::demo_api_images_set_has_access() ) {
 			wp_enqueue_style(
 				'admin-demo',
 				DEMO_API_IMAGES_URL . 'assets/css/demo.css',

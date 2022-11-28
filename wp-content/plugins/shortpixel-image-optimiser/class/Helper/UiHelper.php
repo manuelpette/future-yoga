@@ -37,7 +37,7 @@ class UiHelper
     foreach($actions as $actionName => $actionData)
     {
         $link = ($actionData['type'] == 'js') ? 'javascript:' . $actionData['function'] : $actionData['function'];
-        $output .= "<a href='" . $link . "' class='$actionName' >" . $actionData['text'] . "</a>";
+        $output .= "<a href='" . $link . "' class='" . esc_attr($actionName) . "' >" . esc_html($actionData['text']) . "</a>";
 
     }
 
@@ -115,7 +115,6 @@ class UiHelper
 
 			 }
 
-
 			 if (count($improvs) > 0)
 			 {
 		       $output .= "<div class='thumb-wrapper'>";
@@ -136,8 +135,9 @@ class UiHelper
 		                      </div>";
 
 		       }
-		       $output .=  "</div></div> <!-- thumb optimized -->";
+		       $output .=  "</div> <!-- /thumb-wrapper -->";
 				}
+				$output .= "</div> <!-- /thumb optimized -->";
     }
 
     if ($retinasDone > 0)
@@ -154,16 +154,18 @@ class UiHelper
     }
     if ($imageObj->isOptimized() && $imageObj->isProcessable())
     {
-        $optimizable = $imageObj->getOptimizeURLS();
+        list($urls, $optimizable) = $imageObj->getCountOptimizeData('thumbnails');
+				list($webpUrls, $webpCount)   =  $imageObj->getCountOptimizeData('webp');
+				list($avifUrls, $avifCount)   =  $imageObj->getCountOptimizeData('avif');
         // Todo check if Webp / Acif is active, check for unoptimized items
-        $processWebp = ($imageObj->isProcessableFileType('webp')) ? true : false;
-        $processAvif = ($imageObj->isProcessableFileType('avif')) ? true : false;
+       // $processWebp = ($imageObj->isProcessableFileType('webp')) ? true : false;
+       // $processAvif = ($imageObj->isProcessableFileType('avif')) ? true : false;
 
-        if (count($optimizable) > 0)
+        if ($optimizable > 0)
         {
-           $output .= '<div class="thumbs-todo"><h4>' . sprintf(__('%d to optimize', 'shortpixel-image-optimiser'), count($optimizable)) . '</h4>';
+           $output .= '<div class="thumbs-todo"><h4>' . sprintf(__('%d to optimize', 'shortpixel-image-optimiser'), $optimizable) . '</h4>';
              $output .= "<span>";
-               foreach($optimizable as $optObj)
+               foreach($urls as $optObj)
                {
                   $output .= substr($optObj, strrpos($optObj, '/')+1) . '<br>';
                }
@@ -171,24 +173,23 @@ class UiHelper
            $output .= '</div>';
         }
 
-        if ($processWebp && count($optimizable) == 0)
+        if ($webpCount > 0 )
         {
-           $webps = $imageObj->getOptimizeFileType('webp');
-           $output .= '<div class="thumbs-todo"><h4>' . sprintf(__('%d Webp files to create', 'shortpixel-image-optimiser'), count($webps)) . '</h4>';
+
+           $output .= '<div class="thumbs-todo"><h4>' . sprintf(__('%d Webp files to create', 'shortpixel-image-optimiser'), $webpCount) . '</h4>';
              $output .= "<span>";
-               foreach($webps as $optObj)
+               foreach($webpUrls as $optObj)
                {
                   $output .= self::convertImageTypeName(substr($optObj, strrpos($optObj, '/')+1), 'webp') . '<br>';
                }
              $output .= "</span>";
            $output .= '</div>';
         }
-        if ($processAvif && count($optimizable) == 0)
+        if ($avifCount > 0)
         {
-            $avifs = $imageObj->getOptimizeFileType('avif');
-            $output .= '<div class="thumbs-todo"><h4>' . sprintf(__('%d Avif files to create', 'shortpixel-image-optimiser'), count($avifs)) . '</h4>';
+            $output .= '<div class="thumbs-todo"><h4>' . sprintf(__('%d Avif files to create', 'shortpixel-image-optimiser'), $avifCount) . '</h4>';
               $output .= "<span>";
-                foreach($avifs as $optObj)
+                foreach($avifUrls as $optObj)
                 {
                    $output .= self::convertImageTypeName(substr($optObj, strrpos($optObj, '/')+1), 'avif') . '<br>';
                 }
@@ -197,14 +198,9 @@ class UiHelper
         }
     }
 
-
-
     return $output;
 
   }
-
-
-
 
   public static function compressionTypeToText($type)
   {
@@ -242,23 +238,27 @@ class UiHelper
 			if ($id === 0)
 				return array();
 
-      if ($mediaItem->isOptimized())
+      if ($mediaItem->isOptimized() )
       {
-           $optimizable = $mediaItem->getOptimizeURLS();
-           //$webp = $mediaItem->
+						list($u, $optimizable) = $mediaItem->getCountOptimizeData('thumbnails');
+						list($u, $optimizableWebp)   =  $mediaItem->getCountOptimizeData('webp');
+						list($u, $optimizableAvif)   =  $mediaItem->getCountOptimizeData('avif');
 
            if ($mediaItem->isProcessable() && ! $mediaItem->isOptimizePrevented())
            {
              $action = self::getAction('optimizethumbs', $id);
-             if (count($optimizable) > 0)
+             if ($optimizable > 0)
              {
-               $action['text']  = sprintf(__('Optimize %s  thumbnails','shortpixel-image-optimiser'),count($optimizable));
+							 $total = $optimizable + $optimizableWebp + $optimizableAvif;
+							 if ($optimizableWebp > 0 || $optimizableAvif > 0)
+							 	   $itemText = __('items', 'shortpixel-image-optimiser');
+								else {
+									 $itemText = __('thumbnails', 'shortpixel-image-optimiser');
+								}
+               $action['text']  = sprintf(__('Optimize %s  %s','shortpixel-image-optimiser'),$total, $itemText);
              }
              else
              {
-                 $optimizableWebp = $mediaItem->isProcessableFileType('webp') ? count($mediaItem->getOptimizeFileType('webp')) : 0;
-                 $optimizableAvif = $mediaItem->isProcessableFileType('avif') ? count($mediaItem->getOptimizeFileType('avif')) : 0;
-
                  if ($optimizableWebp > 0 && $optimizableAvif > 0)
                    $text  = sprintf(__('Optimize %s webps and %s avif','shortpixel-image-optimiser'),$optimizableWebp, $optimizableAvif);
                  elseif ($optimizableWebp > 0)
@@ -321,6 +321,10 @@ class UiHelper
 						}
         } // hasBackup
 
+				if (\wpSPIO()->env()->is_debug && $mediaItem->get('type') == 'media')
+				{
+					 $list_actions['redo_legacy'] = self::getAction('redo_legacy', $id);
+				}
       } //isOptimized
 
       if(! $quotaControl->hasQuota())
@@ -384,17 +388,23 @@ class UiHelper
 		// This basically happens when a NextGen gallery is not added to Custom Media.
 		elseif ($mediaItem->get('id') === 0)
 		{
-			 $text = __('This image was not found in our database. Refresh folders, or add this gallery', 'shortpixel-image-optimiser');
+			 if ($mediaItem->isProcessable(true) === false)
+			 {
+				 $text = __('Not Processable: ','shortpixel_image_optimiser');
+				 $text  .= $mediaItem->getProcessableReason();
+			 }
+			 else {
+				 $text = __('This image was not found in our database. Refresh folders, or add this gallery', 'shortpixel-image-optimiser');
+			 }
 		}
     elseif ($mediaItem->isOptimized())
     {
        $text = UiHelper::renderSuccessText($mediaItem);
     }
-    elseif (! $mediaItem->isProcessable(true) && ! $mediaItem->isOptimized())
+    elseif (! $mediaItem->isProcessable() && ! $mediaItem->isOptimized())
     {
        $text = __('Not Processable: ','shortpixel_image_optimiser');
        $text  .= $mediaItem->getProcessableReason();
-
     }
     elseif (! $mediaItem->exists())
     {
@@ -409,13 +419,43 @@ class UiHelper
 			 $text = __('This item is waiting to be processed', 'shortpixel-image-optimiser');
 		}
 
-      if ($mediaItem->isOptimizePrevented() !== false)
-      {
+    if ($mediaItem->isOptimizePrevented() !== false)
+    {
 
           $retry = self::getAction('retry', $mediaItem->get('id'));
-          $text .= "<div class='shortpixel-image-error'>" . $mediaItem->isOptimizePrevented();
+
+
+					$redo_legacy = false;
+
+					if ($mediaItem->get('type') == 'media')
+					{
+	 					$was_converted = get_post_meta($mediaItem->get('id'), '_shortpixel_was_converted', true);
+						$updateTs = 1656892800; // July 4th 2022 - 00:00 GMT
+
+						if ($was_converted < $updateTs)
+						{
+							$meta = $mediaItem->getWPMetaData();
+							if (is_array($meta) && isset($meta['ShortPixel']))
+							{
+								$redo_legacy = self::getAction('redo_legacy', $mediaItem->get('id'));
+							}
+						}
+					}
+
+          $text .= "<div class='shortpixel-image-error'>" . esc_html($mediaItem->getReason('processable'));
           $text .= "<span class='shortpixel-error-reset'>" . sprintf(__('After you have fixed this issue, you can %s click here to retry %s', 'shortpixel-image-optimiser'), '<a href="javascript:' . $retry['function'] . '">', '</a>');
+
           $text .= '</div>';
+
+
+					if ($redo_legacy !== false)
+					{
+						$text .= "<div class='shortpixel-image-error'><span class='shortpixel-error-reset'>";
+
+						$text .= sprintf(esc_html__('It seems you have older converted legacy data, which might cause this issue. You can try to %s %s %s . If nothing changes, this is not the cause. ','shortpixel-image-optimiser'), '<a href="javascript:' . $redo_legacy['function'] . '">', $redo_legacy['text'], '</a>');
+						$text .= "</span></div>";
+					}
+
       }
 
     return $text;
@@ -447,6 +487,12 @@ class UiHelper
          $action['text'] = __('Retry', 'shortpixel-image-optimiser') ;
          $action['display'] = 'button';
      break;
+		 case 'redo_legacy':
+		 			$action['function'] = 'window.ShortPixelProcessor.screen.RedoLegacy(' . $id . ');';
+		 			$action['type']  = 'js';
+		 			$action['text'] = __('Redo Conversion', 'shortpixel-image-optimiser') ;
+		 			$action['display'] = 'button';
+		 break;
 
      case 'restore':
          $action['function'] = 'window.ShortPixelProcessor.screen.RestoreItem(' . $id . ');';
@@ -486,9 +532,8 @@ class UiHelper
         $action['text'] = __('Re-optimize Lossless','shortpixel-image-optimiser');
         $action['display'] = 'inline';
      break;
-
      case 'extendquota':
-        $action['function'] = 'https://shortpixel.com/login'. $keyControl->getKeyForDisplay();
+        $action['function'] = 'https://shortpixel.com/login/'. $keyControl->getKeyForDisplay();
         $action['type'] = 'button';
         $action['text'] = __('Extend Quota','shortpixel-image-optimiser');
         $action['display'] = 'button';
@@ -498,7 +543,6 @@ class UiHelper
         $action['type'] = 'js';
         $action['display'] = 'button';
         $action['text'] = __('Check&nbsp;&nbsp;Quota','shortpixel-image-optimiser');
-
      break;
    }
 
@@ -577,8 +621,41 @@ class UiHelper
 
 	public static function formatNumber($number, $precision = 2)
 	{
-		  return  number_format_i18n( (int) $number, $precision);
+			global $wp_locale;
+			$decimalpoint = isset($wp_locale->number_format['decimal_point']) ? $wp_locale->number_format['decimal_point'] : false;
+			$number =  number_format_i18n( (float) $number, $precision);
+
+ 			$hasDecimal = (strpos($number, $decimalpoint) === false) ? false : true;
+
+			// Don't show trailing zeroes if number is a whole unbroken number. -> string comparison because number_format_i18n returns string.
+			if ($decimalpoint !== false && $hasDecimal && substr($number, strpos($number, $decimalpoint) + 1) === '00')
+			{
+				 $number = substr($number, 0, strpos($number, $decimalpoint));
+			}
+			// Some locale's have no-breaking-space as thousands separator. This doesn't work well in JS / Cron Shell so replace with space.
+			$number = str_replace('&nbsp;', ' ', $number);
+		  return $number;
 	}
+
+	public static function formatDate( $date ) {
+
+	if ( '0000-00-00 00:00:00' === $date->format('Y-m-d ') ) {
+			$h_time = '';
+	} else {
+			$time   = $date->format('U'); //get_post_time( 'G', true, $post, false );
+			if ( ( abs( $t_diff = time() - $time ) ) < DAY_IN_SECONDS ) {
+					if ( $t_diff < 0 ) {
+							$h_time = sprintf( __( '%s from now' ), human_time_diff( $time ) );
+					} else {
+							$h_time = sprintf( __( '%s ago' ), human_time_diff( $time ) );
+					}
+			} else {
+					$h_time = $date->format( 'Y/m/d' );
+			}
+	}
+
+	return $h_time;
+}
 
 	protected static function convertImageTypeName($name, $type)
 	{
@@ -597,7 +674,7 @@ class UiHelper
 		}
 		else
 		{
-			 return substr($name, 0, strpos($name, '.')) . '.' . $type;
+			 return substr($name, 0, strrpos($name, '.')) . '.' . $type;
 		}
 
 	}

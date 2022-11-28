@@ -3,7 +3,7 @@
  * We also have to use jQuery to create new one
  */
 jQuery(document).ready(() => {
-    jQuery(window).on("elementor:init", function () {
+    jQuery(window).on("elementor/init elementor:init", function () {
         const ControlQueryPostSearch = elementor.modules.controls.BaseData.extend({
             isPostSearchReady: false,
 

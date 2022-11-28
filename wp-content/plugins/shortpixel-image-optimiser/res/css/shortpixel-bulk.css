@@ -309,7 +309,7 @@
 .shortpixel-bulk-wrapper section.panel.dashboard .bulk-wrapper {
   background: url("../img/bulk/dashboard-background.svg") no-repeat;
   background-size: cover;
-  background-position: left center;
+  background-position: center;
   background-color: #116C7D;
   text-align: center;
   height: 150px;
@@ -392,6 +392,7 @@
   flex-direction: row;
   width: 90%;
   justify-content: space-around;
+  margin: 0 auto;
 }
 .shortpixel-bulk-wrapper section.spio-progressbar .flex > div {
   display: flex;
@@ -403,6 +404,10 @@
 .shortpixel-bulk-wrapper section.spio-progressbar .flex > div.result .line {
   background: linear-gradient(90deg, #cccccc 0%, #cccccc 49.9%, white 51%, white 100%);
 }
+.shortpixel-bulk-wrapper section.spio-progressbar .flex > div.select .line {
+  width: 50%;
+  left: 50%;
+}
 .shortpixel-bulk-wrapper section.spio-progressbar .flex .line {
   background: #ccc;
   height: 2px;
@@ -410,7 +415,7 @@
   box-sizing: border-box;
   display: inline-block;
   position: absolute;
-  top: 40%;
+  top: 22px;
   z-index: 1;
   transition: color 1s ease-in;
 }
@@ -545,6 +550,14 @@
 }
 .shortpixel-bulk-wrapper section.panel.selection .optiongroup .option .number {
   font-weight: 700;
+}
+.shortpixel-bulk-wrapper section.panel.selection .optiongroup .option.warning {
+  border-left: 4px solid #dba617;
+  padding-left: 8px;
+  color: #000;
+}
+.shortpixel-bulk-wrapper section.panel.selection .count_limited {
+  color: #ff0000;
 }
 .shortpixel-bulk-wrapper section.panel.summary .spio-progressbar .select .line {
   background: #1FBEC9;
@@ -817,19 +830,21 @@
 }
 .shortpixel-bulk-wrapper section.panel.process .image-preview-section .image-preview-line, .shortpixel-bulk-wrapper section.panel.finished .image-preview-section .image-preview-line {
   display: flex;
-  width: 90%;
+  width: 100%;
   justify-content: space-between;
   align-items: center;
-  margin: 15px auto;
 }
 .shortpixel-bulk-wrapper section.panel.process .image-preview-section .image-preview-line [data-result=filename], .shortpixel-bulk-wrapper section.panel.finished .image-preview-section .image-preview-line [data-result=filename] {
   overflow: hidden;
   font-weight: 700;
+  margin-top: -12px;
 }
 .shortpixel-bulk-wrapper section.panel.process .image-preview-section .image-preview-line .opt-circle-image, .shortpixel-bulk-wrapper section.panel.finished .image-preview-section .image-preview-line .opt-circle-image {
   width: 55px;
   height: 55px;
   float: right;
+  margin-top: 12px;
+  margin-right: 5%;
 }
 .shortpixel-bulk-wrapper section.panel.process .image-preview-section .image-preview-line .opt-circle-image .trail, .shortpixel-bulk-wrapper section.panel.finished .image-preview-section .image-preview-line .opt-circle-image .trail {
   stroke: #ddd;

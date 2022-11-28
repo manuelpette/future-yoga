@@ -21,6 +21,8 @@ class wpOffload
     protected $is_cname = false;
     protected $cname;
 
+		private $sources; // cache for url > source_id lookup, to prevent duplicate queries.
+
     // if might have to do these checks many times for each thumbnails, keep it fastish.
     //protected $retrievedCache = array();
 
@@ -55,11 +57,12 @@ class wpOffload
         $this->offloading = false;
       }
 
-      if ('cloudfront' === $this->as3cf->get_setting( 'domain' ))
+    /*	// Lets see if this can be without
+			if ('cloudfront' === $this->as3cf->get_setting( 'domain' ))
       {
         $this->is_cname = true;
         $this->cname = $this->as3cf->get_setting( 'cloudfront' );
-      }
+      } */
 
   //    $provider = $this->as3cf->get_provider();
       add_action('shortpixel/image/optimised', array($this, 'image_upload'), 10);
@@ -75,6 +78,8 @@ class wpOffload
 			{
 			//	add_filter('as3cf_remove_source_files_from_provider', array($this, 'remove_webp_paths'), 10);
 				add_action('shortpixel/image/convertpng2jpg_success', array($this, 'image_converted'), 10);
+				add_filter('as3cf_remove_source_files_from_provider', array($this, 'remove_webp_paths'));
+
 			}
 			else {
       	add_filter('as3cf_remove_attachment_paths', array($this, 'remove_webp_paths'));
@@ -90,12 +95,10 @@ class wpOffload
       add_filter('shortpixel/file/virtual/translate', array($this, 'getLocalPathByURL'));
 
       // for webp picture paths rendered via output
-      add_filter('shortpixel_webp_image_base', array($this, 'checkWebpRemotePath'), 10, 2);
+     // add_filter('shortpixel_webp_image_base', array($this, 'checkWebpRemotePath'), 10, 2);
       add_filter('shortpixel/front/webp_notfound', array($this, 'fixWebpRemotePath'), 10, 4);
 
     }
-
-
 
     public function returnOriginalFile($file, $attach_id)
     {
@@ -183,31 +186,105 @@ class wpOffload
         return $mediaItem;
     }
 
+		private function sourceCache($url, $source_id = null)
+		{
+			if ($source_id === null && isset($this->sources[$url]))
+			{
+				$source_id = $this->sources[$url];
+				return $source_id;
+			}
+			elseif ($source_id !== null)
+			{
+				 if (! isset($this->sources[$url]))
+				 {
+					  $this->sources[$url]  = $source_id;
+				 }
+				 return $source_id;
+			}
+
+			return false;
+		}
 
     public function checkIfOffloaded($bool, $url)
     {
-      $source_id = $this->getSourceIDByURL($url);
+
+			$source_id = $this->sourceCache($url);
+
+
+			if (false === $source_id)
+			{
+				$extension = substr($url, strrpos($url, '.') + 1);
+				// If these filetypes are not in the cache, they cannot be found via geSourceyIDByUrl method ( not in path DB ), so it's pointless to try. If they are offloaded, at some point the extra-info might load.
+				if ($extension == 'webp' || $extension == 'avif')
+				{
+					return false;
+				}
+
+     		$source_id = $this->getSourceIDByURL($url);
+			}
 
       if ($source_id !== false)
+			{
         return true;
+			}
       else
         return false;
     }
 
     protected function getSourceIDByURL($url)
     {
-      $class = $this->getMediaClass();
-      $source = $class::get_item_source_by_remote_url($url);
 
-			$source_id = isset($source['id']) ? intval($source['id']) : false;
+			$source_id = $this->sourceCache($url); // check cache first.
 
-      if ($source_id !== false)
-        return $source_id;
-      else
-      {
-        $source_id = $this->checkIfThumbnail($url); // can be item or false.
-        return $source_id;
+			if (false === $source_id) // check on the raw url.
+			{
+      	$class = $this->getMediaClass();
+      	$source = $class::get_item_source_by_remote_url($url);
+				$source_id = isset($source['id']) ? intval($source['id']) : false;
+			}
+
+			if (false === $source_id) // check now via the thumbnail hocus.
+			{
+				$pattern = '/(.*)-\d+[xX]\d+(\.\w+)/m';
+				$url = preg_replace($pattern, '$1$2', $url);
+
+				$source_id = $this->sourceCache($url); // check cache first.
+
+				if (false === $source_id)
+				{
+					$source = $class::get_item_source_by_remote_url($url);
+					$source_id = isset($source['id']) ? intval($source['id']) : false;
+				}
+
       }
+
+			if ($source_id !== false)
+			{
+
+				$this->sourceCache($url, $source_id);  // cache it.
+
+				// get item
+				$item = $this->getItemById($source_id);
+				if (is_object($item) && method_exists($item, 'extra_info'))
+				{
+					$baseUrl = str_replace(basename($url),'', $url);
+					$extra_info = $item->extra_info();
+
+					if (isset($extra_info['objects']))
+					{
+						foreach($extra_info['objects'] as $extraItem)
+						{
+							 if (is_array($extraItem) && isset($extraItem['source_file']))
+							 {
+								 // Add source stuff into cache.
+								  $this->sourceCache($baseUrl . $extraItem['source_file'], $source_id);
+							 }
+						}
+					}
+				}
+
+				return $source_id;
+			}
 
       return false;
     }
@@ -216,16 +293,12 @@ class wpOffload
     private function checkIfThumbnail($original_url)
     {
         //$result = \attachment_url_to_postid($url);
-        $pattern = '/(.*)-\d+[xX]\d+(\.\w+)/m';
-        $url = preg_replace($pattern, '$1$2', $original_url);
-
-        $class = $this->getMediaClass();
-        $source = $class::get_item_source_by_remote_url($url);
-
-				$source_id = isset($source['id']) ? intval($source['id']) : false;
 
         if ($source_id !== false)
+				{
+					$this->sourceCache($url, $source_id);
           return $source_id;
+				}
         else
           return false;
 
@@ -237,12 +310,13 @@ class wpOffload
     {
        $source_id = $this->getSourceIDByURL($url);
 
+
        if ($source_id == false)
        {
-
         return false;
       }
        $item = $this->getItemById($source_id);
+
 
        $original_path = $item->original_source_path(); // $values['original_source_path'];
 
@@ -504,13 +578,13 @@ class wpOffload
             $newPaths[$size . '_webp'] =  $webpformat1;
          }
          else {
-           $newPaths[$size . '_webp1'] =  $webpformat1;
+           $newPaths[$size . '_webp'] =  $webpformat1;
          }
 
          if ($check_exists)
          {
            if(file_exists($webpformat2))
-            $newPaths[$size . '_webp'] =  $webpformat2;
+            $newPaths[$size . '_webp2'] =  $webpformat2;
          }
          else {
            $newPaths[$size . '_webp2'] =  $webpformat2;
@@ -538,6 +612,7 @@ class wpOffload
     public function add_webp_paths($paths)
     {
         $paths = $this->getWebpPaths($paths, true);
+				 //Log::addDebug('Add S3 Paths', array($paths));
         return $paths;
     }
 
@@ -545,7 +620,7 @@ class wpOffload
     public function remove_webp_paths($paths)
     {
       $paths = $this->getWebpPaths($paths, false);
-      //Log::addDebug('Remove S3 Paths', array($paths));
+      Log::addDebug('Remove S3 Paths', array($paths));
 
       return $paths;
     }
@@ -560,7 +635,7 @@ class wpOffload
       }
       elseif($this->is_cname) // check this. the webp to picture will convert subdomains with CNAME to some local path when offloaded.
       {
-          Log::addDebug('S3 active, checking on CNAME for path' . $this->cname);
+          Log::addDebug('S3 active, checking on CNAME for path' . $this->cname, $url);
           if (strpos($original, $this->cname) !== false)
             return $this->convertWebPRemotePath($url, $original);
       }
@@ -569,37 +644,35 @@ class wpOffload
 
     }
 
-    private function convertWebPRemotePath($url, $original)
+
+    // GetbyURL can't find thumbnails, only the main image. Check via extrainfo method if we can find needed filetype
+		// @param $bool Boolean
+		// @param $fileObj FileModel  The webp file we are searching for
+		// @param $url  string  The URL of the main file ( aka .jpg )
+		// @param $imagebaseDir DirectoryModel  The remote path / path this all takes place at.
+    public function fixWebpRemotePath($bool, $fileObj, $url, $imagebaseDir)
     {
-      $mediaItem = $this->getByURL($original); // test if exists remote.
-      Log::addDebug('ImageBaseName check for S3 - ', array($original, $mediaItem));
+			 return false;
+			 /*
+				if (! is_object($imagebaseDir))
+				{
+						return $bool;
+				}
 
-      if ($mediaItem === false)
-      {
-        $pattern = '/-\d+x\d*/i';
-        $replaced_url = preg_replace($pattern, '', $original);
-        $mediaItem = $this->getByURL($replaced_url);
-      }
+				// Check if main file is offloaded. This should also trigger sourceCache.
+				if ($this->checkifOffloaded($bool, $url) && $this->checkIfOffloaded($bool, $fileObj->getFullPath()) )
+				{
+					 return $fileObj;
+				}
+				else {
+					 	return false;
+				} */
 
-      if ($mediaItem === false)
-      {
-         return $url;
-      }
-      $parsed = parse_url($original);
-      $url = str_replace($parsed['scheme'], '', $original);
-      $url = str_replace(basename($url), '',  $url);
-      Log::addDebug('New BasePath, External' . $url);
-
-      return $url;
-    }
-
-    // GetbyURL can't find thumbnails, only the main image. We are going to assume, if imagebase is ok, the webp might be there.
-    public function fixWebpRemotePath($bool, $file, $url, $imagebase)
-    {
-        if (strpos($url, $imagebase ) !== false)
-          return $file;
+/*        if (strpos($url, $imagebaseDir->getPath() ) !== false)
+          return $fileObj;
         else
           return $bool;
+*/
     }
 
 }

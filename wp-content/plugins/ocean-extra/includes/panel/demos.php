@@ -941,9 +941,9 @@ if ( ! class_exists( 'OceanWP_Demos' ) ) {
 	    	global $pagenow;
 
 	        // Display on the demos pages
-	        if ( ( 'admin.php' == $pagenow && 'oceanwp-panel-install-demos' == $_GET['page'] )
-	            || ( 'admin.php' == $pagenow && 'oceanwp-panel-pro-demos' == $_GET['page'] )
-				|| ( 'admin.php' == $pagenow && 'oceanwp' == $_GET['page'] ) ) { ?>
+	        if ( ( 'admin.php' == $pagenow && 'oceanwp-panel-install-demos' && isset( $_GET['page'] ) == $_GET['page'] )
+	            || ( 'admin.php' == $pagenow && 'oceanwp-panel-pro-demos' && isset( $_GET['page'] )  == $_GET['page'] )
+				|| ( 'admin.php' == $pagenow && 'oceanwp' && isset( $_GET['page'] )  == $_GET['page'] ) ) { ?>
 		        
 		        <div id="owp-demo-popup-wrap">
 					<div class="owp-demo-popup-container">
@@ -1007,14 +1007,14 @@ if ( ! class_exists( 'OceanWP_Demos' ) ) {
 
 					<p><?php echo
 						sprintf(
-							esc_html__( 'Importing demo data allow you to quickly edit everything instead of creating content from scratch. It is recommended uploading sample data on a fresh WordPress install to prevent conflicts with your current content. You can use this plugin to reset your site if needed: %1$sWordpress Database Reset%2$s.', 'ocean-extra' ),
+							esc_html__( 'Importing a demo template allows you to kick-start your website fast, instead of creating content from scratch. It is recommended to upload a demo template on a fresh WordPress install to prevent conflict with your current content or content loss. You can use this plugin to reset your site if needed: %1$sWordpress Database Reset%2$s.', 'ocean-extra' ),
 							'<a href="'. $plugin_link .'" target="_blank">',
 							'</a>'
 						); ?></p>
 
 					<div class="owp-required-plugins-wrap">
 						<h3><?php esc_html_e( 'Required Plugins', 'ocean-extra' ); ?></h3>
-						<p><?php esc_html_e( 'For your site to look exactly like this demo, the plugins below need to be activated.', 'ocean-extra' ); ?></p>
+						<p><?php esc_html_e( 'For your site to look exactly like this demo, we recommend the plugins below to be installed and activated.', 'ocean-extra' ); ?></p>
 						<div class="owp-required-plugins oe-plugin-installer">
 							<?php
 							self::required_plugins( $free, 'free' );

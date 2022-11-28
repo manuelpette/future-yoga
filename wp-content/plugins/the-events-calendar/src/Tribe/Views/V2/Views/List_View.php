@@ -11,6 +11,7 @@ namespace Tribe\Events\Views\V2\Views;
 use Tribe\Events\Views\V2\Utils;
 use Tribe\Events\Views\V2\View;
 use Tribe\Events\Views\V2\Views\Traits\List_Behavior;
+use Tribe\Events\Views\V2\Messages;
 use Tribe__Context;
 use Tribe__Events__Main as TEC;
 use Tribe__Events__Rewrite as TEC_Rewrite;
@@ -43,6 +44,24 @@ class List_View extends View {
 	 * @var bool
 	 */
 	protected static $date_in_url = false;
+
+	/**
+	 * Default untranslated value for the label of this view.
+	 *
+	 * @since 6.0.4
+	 *
+	 * @var string
+	 */
+	protected static $label = 'List';
+
+	/**
+	 * @inheritDoc
+	 */
+	public static function get_view_label(): string {
+		static::$label = _x( 'List', 'The text label for the List View.', 'the-events-calendar' );
+
+		return static::filter_view_label( static::$label );
+	}
 
 	/**
 	 * {@inheritDoc}
@@ -85,7 +104,7 @@ class List_View extends View {
 		$current_page = (int) $this->context->get( 'page', 1 );
 		$display      = $this->context->get( 'event_display_mode', $this->slug );
 
-		if ( $this->slug === $display || 'default' === $display ) {
+		if ( $this->slug === $display || 'default' === $display || $this instanceof $display ) {
 			$url = parent::next_url( $canonical );
 		} elseif ( $current_page > 1 ) {
 			$url = parent::prev_url( $canonical, [ Utils\View::get_past_event_display_key() => 'past' ] );

@@ -40,7 +40,7 @@ class AjaxController
       $bulkSecret = $cacheControl->getItem('bulk-secret');
 
       $secretKey = $bulkSecret->getValue();
-      if (is_null($secretKey) || strlen($secretKey) == 0)
+      if (is_null($secretKey) || strlen($secretKey) == 0 || $secretKey === 'null')
       {
         $secretKey = false;
       }
@@ -50,8 +50,10 @@ class AjaxController
     public function checkProcessorKey()
     {
       $processKey = $this->getProcessorKey();
-      $bulkSecret = isset($_POST['bulk-secret']) ? sanitize_text_field($_POST['bulk-secret']) : false;
-      $isBulk = isset($_POST['isBulk']) ? filter_var(sanitize_text_field($_POST['isBulk']), FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE) : false;
+			// phpcs:ignore -- Nonce is checked
+      $bulkSecret = isset($_POST['bulk-secret']) ? sanitize_text_field(wp_unslash($_POST['bulk-secret'])) : false;
+			// phpcs:ignore -- Nonce is checked
+      $isBulk = isset($_POST['isBulk']) ? filter_var(sanitize_text_field(wp_unslash($_POST['isBulk'])), FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE) : false;
 
       $is_processor = false;
       if ($processKey == false && $bulkSecret !== false)
@@ -110,8 +112,9 @@ class AjaxController
     public function ajax_getItemView()
     {
         $this->checkNonce('item_view');
-
+				// phpcs:ignore -- Nonce is checked
           $type = isset($_POST['type']) ? sanitize_text_field($_POST['type']) : 'media';
+				// phpcs:ignore -- Nonce is checked
           $id = isset($_POST['id']) ? intval($_POST['id']) : false;
 					$result = '';
 
@@ -120,17 +123,17 @@ class AjaxController
              if ($type == 'media')
              {
                ob_start();
-                  $control = new ListMediaViewController();
-                  $control->doColumn('wp-shortPixel', $id);
-                $result = ob_get_contents();
-                ob_end_clean();
+               $control = new ListMediaViewController();
+               $control->doColumn('wp-shortPixel', $id);
+               $result = ob_get_contents();
+               ob_end_clean();
              }
              if ($type == 'custom')
              {
                 ob_start();
-                   $control = new OtherMediaViewController();
-                   $item = \wpSPIO()->filesystem()->getImage($id, 'custom');
-                   $control->doActionColumn($item);
+                $control = new OtherMediaViewController();
+                $item = \wpSPIO()->filesystem()->getImage($id, 'custom');
+                  $control->doActionColumn($item);
                 $result = ob_get_contents();
                 ob_end_clean();
              }
@@ -147,21 +150,17 @@ class AjaxController
           $this->send($json);
     }
 
-
     public function ajax_processQueue()
     {
         $this->checkNonce('processing');
         $this->checkProcessorKey();
 
-
-				if ($this->getProcessorKey() == 'shortpixel-test')
-				{
-						$this->returnTestData();
-				}
-
         // Notice that POST variables are always string, so 'true', not true.
+				// phpcs:ignore -- Nonce is checked
         $isBulk = (isset($_POST['isBulk']) && $_POST['isBulk'] === 'true') ? true : false;
+				// phpcs:ignore -- Nonce is checked
         $queue = (isset($_POST['queues'])) ? sanitize_text_field($_POST['queues']) : 'media,custom';
+
         $queues = array_filter(explode(',', $queue), 'trim');
 
         $control = new OptimizeController();
@@ -171,14 +170,15 @@ class AjaxController
         $this->send($result);
     }
 
-
-
     public function ajaxRequest()
     {
         $this->checkNonce('ajax_request');
 
+			  // phpcs:ignore -- Nonce is checked
         $action = isset($_POST['screen_action']) ? sanitize_text_field($_POST['screen_action']) : false;
+				// phpcs:ignore -- Nonce is checked
         $typeArray = isset($_POST['type'])  ? array(sanitize_text_field($_POST['type'])) : array('media', 'custom');
+				// phpcs:ignore -- Nonce is checked
         $id = isset($_POST['id']) ? intval($_POST['id']) : false;
 
         $json = new \stdClass;
@@ -244,6 +244,9 @@ class AjaxController
 					  	$data['logFile'] = isset($_POST['loadFile']) ? sanitize_text_field($_POST['loadFile']) : null;
 					 		$json = $this->loadLogFile($json, $data);
 					 break;
+					 case "redoLegacy":
+					 	  $this->redoLegacy($json, $data);
+					 break;
 
            default:
               $json->$type->message = __('Ajaxrequest - no action found', 'shorpixel-image-optimiser');
@@ -258,7 +261,6 @@ class AjaxController
     public function getMediaItem($id, $type)
     {
       $fs = \wpSPIO()->filesystem();
-
       return $fs->getImage($id, $type);
 
     }
@@ -268,8 +270,6 @@ class AjaxController
     {
           $id = intval($_POST['id']);
           $type = isset($_POST['type']) ? sanitize_text_field($_POST['type']) : 'media';
-
-					$addImage = isset($_POST['optimizeType']) ? sanitize_text_field($_POST['optimizeType']) : null;
 
           $mediaItem = $this->getMediaItem($id, $type);
 
@@ -291,28 +291,27 @@ class AjaxController
     * @todo Test if it works with plugin intergration
     *
     */
-    public function onWpLrUpdateMedia()
+    public function onWpLrUpdateMedia($imageId)
     {
-      $meta = wp_get_attachment_metadata($imageId);
+     /*
+		 Should be handled by OnDelete.
+		 $meta = wp_get_attachment_metadata($imageId);
       if(is_array($meta)) {
 						// get rid of legacy data, otherwise it will convert
            if (isset($meta['ShortPixel']))
             unset($meta['ShortPixel']);
 
            update_post_meta($imageId, '_wp_attachment_metadata', $meta);
-      }
+      } */
 
       // Get and remove Meta
-      $mediaItem = \wpSPIO()->filesystem->getImage($imageId, 'media');
-      $mediaItem->deleteMeta();
+      $mediaItem = \wpSPIO()->filesystem()->getImage($imageId, 'media');
+      $mediaItem->onDelete();
 
       // Optimize
       $control = new OptimizeController();
-      $json = new \stdClass;
-      $json->$type = new \stdClass;
-
-      $json->$type = $control->addItemToQueue($mediaItem);
-      return $json;
+      $json = $control->addItemToQueue($mediaItem);
+      //return $json;
 
     }
 
@@ -325,6 +324,7 @@ class AjaxController
       $control = new OptimizeController();
 
       $json->$type = $control->restoreItem($mediaItem);
+
 
       return $json;
     }
@@ -480,6 +480,30 @@ class AjaxController
 
        return $json;
     }
+
+		protected function redoLegacy($json, $data)
+		{
+			$id = $data['id'];
+			$type = $data['type'];
+			$mediaItem = $this->getMediaItem($id, $type);
+
+		//	$this->ajax_getItemView();
+
+		// Changed since updated function should detect what is what.
+		//	$mediaItem->deleteMeta(); // also does reset prevent.
+		//	delete_post_meta($id, '_shortpixel_was_converted');
+
+			$mediaItem->migrate();
+			//$mediaItem = $this->getMediaItem($id, $type);
+
+/*			$json->status = true;
+			$json->media->id = $id;
+			$json->media->itemView = ''; */
+			$json->status = true;
+			$json->media->id = $id;
+			$json->media->type = 'media';
+			$this->send($json);
+		}
 
     /** Data for the compare function */
     public function ajax_getComparerData() {
@@ -699,16 +723,6 @@ class AjaxController
         exit();
     }
 
-		private function returnTestData()
-		{
-				$is_error = rand(1, 10);
-				$path = \wpSPIO()->plugin_path('tests/jsonresults/');
-				$json = file_get_contents($path . 'error.json');
-				$json = json_decode($json);
-				wp_send_json($json);
-
-
-		}
 
 		private function removeAllData($json, $data)
 		{

@@ -24,7 +24,11 @@ class Module extends Module_Base {
 
 	public function register_controls() {
 		$controls_manager = \Elementor\Plugin::$instance->controls_manager;
-		$controls_manager->register_control( self::QUERY_CONTROL_ID, new Query() );
+		if ( $this->is_elementor_version( '>=', '3.5.0' ) ) {
+			$controls_manager->register( new Query() );
+		} else {
+			$controls_manager->register_control( self::QUERY_CONTROL_ID, new Query() );
+		}
 	}
 
 	public function get_posts_title_by_id() {
@@ -149,6 +153,10 @@ class Module extends Module_Base {
 	protected function add_actions() {
 		add_action( 'wp_ajax_oew_get_posts_by_query', array( $this, 'get_posts_by_query' ) );
 		add_action( 'wp_ajax_oew_get_posts_title_by_id', array( $this, 'get_posts_title_by_id' ) );
-		add_action( 'elementor/controls/controls_registered', array( $this, 'register_controls' ) );
+		if ( $this->is_elementor_version( '>=', '3.5.0' ) ) {
+			add_action( 'elementor/controls/register', array( $this, 'register_controls' ) );
+		} else {
+			add_action( 'elementor/controls/controls_registered', array( $this, 'register_controls' ) );
+		}
 	}
 }

@@ -28,6 +28,7 @@ class OEW_ImageApi_Integrations {
 	public static function settings( $array ) {
 
 		$array['api_images_integration']     = get_option( 'owp_api_images_integration' );
+		$array['api_images_integration_server']     = get_option( 'owp_api_images_integration_server' );
 		$array['flaticon_integration']       = get_option( 'owp_flaticon_integration' );
 		$array['freepik_integration']        = get_option( 'owp_freepik_integration' );
 		$array['freepik_image_width']        = get_option( 'owp_freepik_image_width' );
@@ -85,6 +86,21 @@ class OEW_ImageApi_Integrations {
 							</option>
 							<option <?php selected( $settings['api_images_integration'], '1', true ); ?> value="1">
 								<?php esc_html_e( 'Enable', 'ocean-pro-demos' ); ?>
+							</option>							
+						</select>
+					</td>
+				</tr>
+				<tr id="owp_api_images_integration_server_tr">
+					<th scope="row">
+						<label for="owp_api_images_integration_server"><?php esc_html_e( 'Server', 'ocean-pro-demos' ); ?></label>
+					</th>
+					<td>
+						<select name="owp_integrations[api_images_integration_server]" id="owp_api_images_integration_server">
+							<option <?php selected( $settings['api_images_integration_server'], 'main', true ); ?> value="main">
+								<?php esc_html_e( 'Main', 'ocean-pro-demos' ); ?>
+							</option>
+							<option <?php selected( $settings['api_images_integration_server'], 'alternative', true ); ?> value="alternative">
+								<?php esc_html_e( 'Alternative', 'ocean-pro-demos' ); ?>
 							</option>							
 						</select>
 					</td>

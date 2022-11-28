@@ -22,6 +22,7 @@ class Modules_Manager {
 
 		$modules = array(
 			'query-post',
+			'clickable-columns',
 			'accordion',
 			'advanced-heading',
 			'alert',
@@ -78,6 +79,11 @@ class Modules_Manager {
 			'twitter-embed',
 			'twitter-timeline',
 			'twitter-follow-share-buttons',
+			'magazine-hero',
+			'magazine-hero-grid',
+			'magazine-grid-simple',
+			'magazine-grid',
+			'magazine-list',
 		);
 
 		// If Advanced Custom Fields

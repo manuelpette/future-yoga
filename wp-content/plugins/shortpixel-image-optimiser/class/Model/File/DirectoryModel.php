@@ -32,7 +32,7 @@ class DirectoryModel extends \ShortPixel\Model
   */
   public function __construct($path)
   {
-      $path = wp_normalize_path($path);
+      //$path = wp_normalize_path($path);
       $fs = \wpSPIO()->filesystem();
 
       if ($fs->pathIsUrl($path))
@@ -155,7 +155,8 @@ class DirectoryModel extends \ShortPixel\Model
   */
   public function getRelativePath()
   {
-     $upload_dir = wp_upload_dir(null, false);
+		// not used anywhere in directory.
+    // $upload_dir = wp_upload_dir(null, false);
 
      $install_dir = get_home_path();
      if($install_dir == '/') {
@@ -398,7 +399,6 @@ class DirectoryModel extends \ShortPixel\Model
   */
   public function getSubDirectories()
   {
-    $fs = \wpSPIO()->fileSystem();
 
     if (! $this->exists() || ! $this->is_readable())
     {
@@ -451,7 +451,7 @@ class DirectoryModel extends \ShortPixel\Model
         $size = 0;
         $files = $this->getFiles();
 
-        // GetFiles can return Boolean false on missing directory. 
+        // GetFiles can return Boolean false on missing directory.
         if (! is_array($files))
         {
            return $size;

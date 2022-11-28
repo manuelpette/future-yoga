@@ -278,6 +278,15 @@ class Blog_Carousel extends Widget_Base {
 		);
 
 		$this->add_control(
+			'offset',
+			array(
+				'label' => esc_html__( 'Post Offset', 'ocean-elementor-widgets' ),
+				'type' => Controls_Manager::NUMBER,
+				'default' => '0'
+			)
+		);
+
+		$this->add_control(
 			'order',
 			array(
 				'label'   => __( 'Order', 'ocean-elementor-widgets' ),
@@ -815,6 +824,7 @@ class Blog_Carousel extends Widget_Base {
 			'order'          => $settings['order'],
 			'orderby'        => $settings['orderby'],
 			'no_found_rows'  => true,
+			'offset'         => isset( $settings['offset'] ) ? $settings['offset']: '',
 		);
 
 		// Include categories

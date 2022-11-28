@@ -18,6 +18,7 @@ class MediaLibraryThumbnailModel extends \ShortPixel\Model\Image\ImageModel
   public $mime; */
   protected $prevent_next_try = false;
   protected $is_main_file = false;
+	protected $is_retina = false; // diffentiate from thumbnail / retina.
   protected $id; // this is the parent attachment id
   protected $size; // size of image in WP, if applicable.
 
@@ -26,6 +27,7 @@ class MediaLibraryThumbnailModel extends \ShortPixel\Model\Image\ImageModel
         parent::__construct($path);
         $this->image_meta = new ImageThumbnailMeta();
         $this->id = $id;
+				$this->imageType = self::IMAGE_TYPE_THUMB;
         $this->size = $size;
         $this->setWebp();
         $this->setAvif();
@@ -47,6 +49,7 @@ class MediaLibraryThumbnailModel extends \ShortPixel\Model\Image\ImageModel
       'image_meta' => $this->image_meta,
       'name' => $this->name,
       'path' => $this->getFullPath(),
+			'size' => $this->size,
       'exists' => ($this->exists()) ? 'yes' : 'no',
 
     );
@@ -58,13 +61,22 @@ class MediaLibraryThumbnailModel extends \ShortPixel\Model\Image\ImageModel
      $this->name = $name;
   }
 
+	public function setImageType($type)
+	{
+		 $this->imageType = $type;
+	}
+
   public function getRetina()
   {
       $filebase = $this->getFileBase();
       $filepath = (string) $this->getFileDir();
       $extension = $this->getExtension();
 
-      $retina = new MediaLibraryThumbnailModel($filepath . $filebase . '@2x.' . $extension); // mind the dot in after 2x
+      $retina = new MediaLibraryThumbnailModel($filepath . $filebase . '@2x.' . $extension, $this->id, $this->size); // mind the dot in after 2x
+			$retina->setName($this->size);
+			$retina->setImageType(self::IMAGE_TYPE_RETINA);
+
+			$retina->is_retina = true;
 
       if ($retina->exists())
         return $retina;
@@ -74,7 +86,7 @@ class MediaLibraryThumbnailModel extends \ShortPixel\Model\Image\ImageModel
 
 
 
-  public function getOptimizeFileType($type = 'webp')
+  public function isFileTypeNeeded($type = 'webp')
   {
       // pdf extension can be optimized, but don't come with these filetypes
       if ($this->getExtension() == 'pdf')
@@ -92,6 +104,7 @@ class MediaLibraryThumbnailModel extends \ShortPixel\Model\Image\ImageModel
       else
         return false;
   }
+
 
 	// @param FileDelete can be false. I.e. multilang duplicates might need removal of metadata, but not images.
   public function onDelete($fileDelete = true)
@@ -119,37 +132,64 @@ class MediaLibraryThumbnailModel extends \ShortPixel\Model\Image\ImageModel
     return $this->image_meta;
   }
 
-  public function getOptimizePaths()
-  {
-    if (! $this->isProcessable() )
-      return array();
 
-    return array($this->getFullPath());
-  }
 
+	// get_path param see MediaLibraryModel
+	// This should be unused at the moment!
   public function getOptimizeUrls()
   {
     if (! $this->isProcessable() )
-      return array();
+      return false;
 
-    $url = $this->getURL();
+		$url = $this->getURL();
+
     if (! $url)
-      return array(); //nothing
+		{
+      return false; //nothing
+		}
 
-
-    return array($url);
+    return $url;
   }
 
   public function getURL()
   {
 			$fs = \wpSPIO()->filesystem();
 
-      if ($this->size == 'original')
+      if ($this->size == 'original' && ! $this->get('is_retina'))
+			{
         $url = wp_get_original_image_url($this->id);
+			}
       elseif ($this->isUnlisted())
+			{
 				$url = $fs->pathToUrl($this);
+			}
 			else
-        $url = wp_get_attachment_image_url($this->id, $this->size);
+			{
+				// We can't trust higher lever function, or any WP functions.  I.e. Woocommerce messes with the URL's if they like so.
+				// So get it from intermediate and if that doesn't work, default to pathToUrl - better than nothing.
+				// https://app.asana.com/0/1200110778640816/1202589533659780
+				$size_array = image_get_intermediate_size($this->id, $this->size);
+
+				if ($size_array === false || ! isset($size_array['url']))
+				{
+					 $url = $fs->pathToUrl($this);
+				}
+				elseif (isset($size_array['url']))
+				{
+					 $url = $size_array['url'];
+					 // Even this can go wrong :/
+					 if (strpos($url, $this->getFileName() ) === false)
+					 {
+						 // Taken from image_get_intermediate_size if somebody still messes with the filters.
+							$mainurl = wp_get_attachment_url( $this->id);
+							$url = path_join( dirname( $mainurl ), $this->getFileName() );
+					 }
+				}
+				else {
+						return false;
+				}
+
+			}
 
       return $this->fs()->checkURL($url);
   }
@@ -181,8 +221,12 @@ class MediaLibraryThumbnailModel extends \ShortPixel\Model\Image\ImageModel
   {
 			// if thumbnail processing is off, thumbs are never processable.
 			// This is also used by main file, so check for that!
-      if ( $this->excludeThumbnails() && $this->is_main_file === false)
+
+      if ( $this->excludeThumbnails() && $this->is_main_file === false && $this->get('imageType') !== self::IMAGE_TYPE_ORIGINAL)
+			{
+				$this->processable_status = self::P_EXCLUDE_SIZE;
         return false;
+			}
       else
       {
         $bool = parent::isProcessable();
@@ -207,14 +251,24 @@ class MediaLibraryThumbnailModel extends \ShortPixel\Model\Image\ImageModel
   // !Important . This doubles as  checking excluded image sizes.
   protected function isSizeExcluded()
   {
+
     $excludeSizes = \wpSPIO()->settings()->excludeSizes;
     if (is_array($excludeSizes) && in_array($this->name, $excludeSizes))
+		{
+			$this->processable_status = self::P_EXCLUDE_SIZE;
       return true;
+		}
+		return false;
+	}
 
-    return false;
-  }
+	public function isProcessableFileType($type = 'webp')
+	{
+			// Prevent webp / avif processing for thumbnails if this is off. Exclude main file
+		  if ($this->excludeThumbnails() === true && $this->is_main_file === false )
+				return false;
 
-
+			return parent::isProcessableFileType($type);
+	}
 
   protected function excludeThumbnails()
   {
@@ -248,6 +302,26 @@ class MediaLibraryThumbnailModel extends \ShortPixel\Model\Image\ImageModel
         }
       }
   }
+
+	public function hasDBRecord()
+	{
+			global $wpdb;
+
+
+			$sql = 'SELECT id FROM ' . $wpdb->prefix . 'shortpixel_postmeta WHERE attach_id = %d AND size = %s';
+			$sql = $wpdb->prepare($sql, $this->id, $this->size);
+
+			$id = $wpdb->get_var($sql);
+
+			if (is_null($id))
+			{
+				 return false;
+			}
+			elseif (is_numeric($id)) {
+				return true;
+			}
+
+	}
 
   public function restore()
   {
