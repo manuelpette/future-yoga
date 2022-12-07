@@ -200,7 +200,7 @@ class FutureYoga_Activities extends Widget_Base {
 	protected function render() {
 		$settings  = $this->get_settings_for_display();
 		$title_tag = $settings['title_html_tag'];
-		
+
 		$activities_ids = get_field('attivita', get_the_ID());
 		$activities = get_terms(array(
 			'taxonomy' => 'tribe_events_cat',
@@ -218,7 +218,12 @@ class FutureYoga_Activities extends Widget_Base {
 			$image_id = get_field('immagine_di_categoria', 'tribe_events_cat_'. $activity->term_id);
 			$excerpt = get_field('descrizione_breve', 'tribe_events_cat_'. $activity->term_id);
 			$label = get_field('etichetta_di_categoria', 'tribe_events_cat_'. $activity->term_id);
+			$is_form_cat = get_field('form_cat', 'tribe_events_cat_'. $activity->term_id);
 			$activity_label = !empty($label) ? $label : $activity->name;
+
+			if($is_form_cat) {
+				$url = '#iscriviti';
+			};
 		?>
         <a class="fy-activity-card" href="<?php echo $url ?>">
 
