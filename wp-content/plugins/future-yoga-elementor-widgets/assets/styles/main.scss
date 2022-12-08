@@ -381,4 +381,14 @@ $tablet-up: 991px;
     .hidden-form-field {
         display: none;
     }
+
+    div.wpforms-container-full .wpforms-form button[type=submit] {
+        background-color: var(--e-global-color-primary);
+
+        &:hover {
+            border: 0;
+            background-color: var(--e-global-color-primary);
+            opacity: .7;
+        }
+    }
 }
