@@ -192,12 +192,6 @@ final class FutureYoga_Elementor_Extension
             global $post;
         return '<a class="moretag" href="'. get_permalink($post->ID) . '">...</a>';
         });
-
-        // Add classes to event wrapper
-        add_filter( 'tribe_events_views_v2_month_multiday_classes', function($classes, $event){
-            $classes[] = 'yo-this-works';
-            return $classes;
-        });
     }
 
     /**

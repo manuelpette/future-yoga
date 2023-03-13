@@ -678,7 +678,7 @@ class FutureYoga_Events extends Widget_Base
 			<?php the_posts_pagination(); ?>
 		<?php else : ?>
 
-			<p class="text-center"><?php _e('Spiacente nessun evento trovato...', 'futureyoga'); ?></p>
+			<p class="text-center"><?php _e('Spiacente non ci sono eventi in arrivo. Puoi consultare gli eventi passati dal calendario.', 'futureyoga'); ?></p>
 
 <?php endif;
 		end_pager_hack();

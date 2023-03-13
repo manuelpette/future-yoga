@@ -17,7 +17,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 <div class="entry-content clr"<?php oceanwp_schema_markup( 'entry_content' ); ?>>
 	<?php the_content(); ?>
 
-<?php 
+<?php
 global $wp_query;
 $posts_per_page = 16;
 
@@ -61,14 +61,14 @@ if (count($events)) : ?>
 					<?php echo get_events_list_markup($events, $query_params, $next_offset, $parents_cache); ?>
 				</div>
 			</div>
-            <small data-load-more-end><?php _e('Tutti gli eventi disponibili sono visualizzati', 'futureyoga'); ?></small>
+            <!-- <small data-load-more-end><?php _e('Tutti gli eventi disponibili sono visualizzati', 'futureyoga'); ?></small> -->
 		</div>
 		</div>
 		</div>
-			
+
 		<?php else : ?>
 
-			<p class="text-center"><?php _e('Spiacente nessun evento trovato...', 'futureyoga'); ?></p>
+			<p class="text-center"><?php _e('Spiacente non ci sono eventi in arrivo. Puoi consultare gli eventi passati dal calendario.', 'futureyoga'); ?></p>
 
 <?php endif; ?>
 

@@ -27,7 +27,7 @@ remove_filter( 'the_content', 'do_blocks', 9 );
 					<div class="tribe-common-c-btn-border tribe-events-c-subscribe-dropdown__button" tabindex="0">
 						<?php $this->template( 'v2/components/icons/cal-export', [ 'classes' => [ 'tribe-events-c-subscribe-dropdown__export-icon' ] ] ); ?>
 						<button class="tribe-events-c-subscribe-dropdown__button-text">
-							<?php echo esc_html__( 'Add to calendar', 'the-events-calendar' ); ?>
+							<?php echo esc_html__( 'Aggiungi al calendario', 'futureyoga' ); ?>
 						</button>
 						<?php $this->template( 'v2/components/icons/caret-down', [ 'classes' => [ 'tribe-events-c-subscribe-dropdown__button-icon' ] ] ); ?>
 					</div>

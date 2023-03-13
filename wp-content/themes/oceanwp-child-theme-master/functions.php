@@ -64,8 +64,8 @@ add_shortcode('fy_event_dates', 'event_date');
 
 function event_times(){
 	global $post_override;
-	$start_time = tribe_get_start_time($post_override->ID, 'H:m');
-	$end_time = tribe_get_end_time($post_override->ID, 'H:m');
+	$start_time = tribe_get_start_time($post_override->ID, 'H:i');
+	$end_time = tribe_get_end_time($post_override->ID, 'H:i');
 
 	return shortcode_wrap($start_time !== $end_time ? __('dalle', 'futureyoga') . ' ' .$start_time . ' alle ' . $end_time : __('alle', 'futureyoga') . ' ' . $start_time);
 }
@@ -114,7 +114,8 @@ function event_teacher(){
 
 	if($teacher_cat && !empty($teacher_cat)) {
 		$teacher_cat_link = get_term_link($teacher_cat);
-		$teacher = '<a href="'.$teacher_cat_link .'">'. $teacher . '</a>';
+		$teacher_link = get_the_permalink($teacher_id);
+		$teacher = '<a href="'.$teacher_link .'">'. $teacher . '</a>';
 	}
 
 	return shortcode_wrap($teacher);
